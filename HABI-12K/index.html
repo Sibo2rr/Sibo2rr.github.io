@@ -1,0 +1,941 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Explore HABI-12K, a dataset of 12,081 indoor scenes with 2.16 million path-traced panoramas and aligned geometry.">
+  <title>HABI-12K — A Synthetic Indoor World Dataset</title>
+  <link rel="icon" href="asset/mark.png">
+  <style>
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --primary: #e07a5f;
+  --ink: #3d405b;
+  --sage: #81b29a;
+  --sand: #f2cc8f;
+  --surface: #f7f7fa;
+  --table-header: #eeeff5;
+  --muted: #5c6073;
+  --line: #dfdfe8;
+  --accent: #a3422c;
+  --accent-bg: #fbede8;
+  --accent-hover: #f7e3dc;
+  --accent-line: #e8aa9a;
+  --on-primary: #282033;
+  --sage-ink: #365f4e;
+  --sage-tint: #e9f3ed;
+  --sand-ink: #79531f;
+  --sand-tint: #fff5e4;
+  --mono: "IBM Plex Mono", ui-monospace, "DejaVu Sans Mono", monospace;
+  --sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --gutter: clamp(18px, 4.35vw, 72px);
+  --header-height: 68px;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; font-family: var(--sans); background: var(--bg); color: var(--ink); line-height: 1.55; }
+[hidden] { display: none !important; }
+a { color: inherit; text-decoration: none; }
+button, input { font: inherit; }
+button { color: inherit; cursor: pointer; }
+button:disabled { cursor: default; opacity: .58; }
+img { display: block; max-width: 100%; }
+h1, h2, h3, p, figure, dl, dd { margin: 0; }
+::selection { background: var(--accent-hover); color: var(--ink); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.shell { width: calc(100% - 2 * var(--gutter)); max-width: 1360px; margin-inline: auto; }
+.skip { position: fixed; z-index: 30; top: 12px; left: 12px; transform: translateY(-160%); padding: 10px 18px; background: var(--accent); color: #ffffff; }
+.skip:focus { transform: translateY(0); }
+.site-header { position: sticky; z-index: 5; top: 0; background: rgb(255 255 255 / 95%); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+.header-inner { display: grid; grid-template-columns: 1fr auto 1fr; min-height: var(--header-height); gap: 20px; align-items: center; }
+.header-lab-logo { display: block; justify-self: end; width: auto; height: clamp(36px, 4.3vw, 54px); overflow: hidden; }
+.wordmark { display: inline-flex; align-items: center; justify-self: start; font-size: 1.2rem; font-weight: 790; letter-spacing: -.035em; white-space: nowrap; }
+.wordmark-accent { color: var(--accent); }
+.brand-dash { display: inline-block; margin-inline: .1em .05em; letter-spacing: 0; }
+.mark { display: inline-block; position: relative; width: 25px; height: 24px; margin-right: 10px; color: var(--primary); }
+.mark::before, .mark::after { content: ""; position: absolute; width: 15px; height: 15px; transform: rotate(30deg) skew(-8deg); border: 1.5px solid currentColor; border-radius: 2px; }
+.mark::before { left: 4px; top: 2px; }
+.mark::after { left: 4px; top: 8px; }
+nav { display: flex; gap: clamp(16px, 3.1vw, 50px); }
+nav a, .footer-bar > a:last-child { font-size: .9rem; color: var(--muted); }
+nav a:hover, .footer-bar > a:last-child:hover { color: var(--accent); }
+.icon { position: relative; display: inline-block; flex: 0 0 auto; width: 16px; height: 16px; }
+.icon-frame { height: 12px; border: 1.4px solid currentColor; border-radius: 2px; }
+.icon-frame::after { content: ""; position: absolute; inset: 2.5px; border: 1px solid currentColor; opacity: .45; }
+.icon-globe { border: 1.4px solid currentColor; border-radius: 50%; }
+.icon-globe::before { content: ""; position: absolute; inset: -1px 3px; border: 1px solid currentColor; border-radius: 50%; }
+.icon-globe::after { content: ""; position: absolute; top: 50%; width: 100%; border-top: 1px solid currentColor; }
+.hero-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #080d12;
+}
+.hero-media img, .hero-media video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.hero-media video { opacity: 0; }
+.hero-media video.has-frame { opacity: 1; }
+.hero-copy { padding-block: clamp(26px, 4.25vw, 60px); text-align: center; }
+.eyebrow { font: 550 .76rem/1.35 var(--mono); letter-spacing: .13em; text-transform: uppercase; color: var(--accent); }
+h1 {
+  margin: 0 0 12px;
+  color: var(--ink);
+  font-size: clamp(3rem, 6.25vw, 6.5rem);
+  font-weight: 750;
+  line-height: .94;
+  letter-spacing: -.055em;
+}
+h1 span { color: var(--accent); }
+.hero-paper-title { margin-bottom: 12px; font-size: clamp(1.38rem, 3.1vw, 2.65rem); font-weight: 640; line-height: 1.12; letter-spacing: -.045em; }
+.hero-authors {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: clamp(1rem, 1.7vw, 1.24rem);
+  font-weight: 580;
+}
+.hero-authors a { color: var(--accent); }
+.hero-affiliation { margin: 4px 0 16px; }
+.hero-summary { max-width: 760px; margin-inline: auto; color: var(--muted); font-size: clamp(1rem, 1.45vw, 1.21rem); }
+.hero-summary > span { display: block; text-wrap: balance; }
+.hero-summary .unbroken { white-space: nowrap; }
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+.hero-actions button, .hero-actions a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 42px;
+  padding: 8px 14px;
+  border: 1px solid var(--accent-line);
+  border-radius: 6px;
+  color: var(--accent);
+  background: var(--accent-bg);
+  font-size: .9rem;
+  font-weight: 620;
+}
+.hero-actions a:hover { background: var(--accent-hover); }
+.nav-hub { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.resource-icon { width: 1.25em; height: 1.25em; object-fit: contain; flex: none; }
+.hero-controls {
+  position: absolute;
+  right: var(--gutter);
+  bottom: 19px;
+  display: flex;
+  gap: 8px;
+}
+.hero-controls button {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  background: rgb(255 255 255 / 95%);
+}
+.hero-controls button:hover { color: var(--accent); border-color: var(--primary); }
+.hero-playback {
+  gap: 8px;
+  padding: 7px 11px;
+  font-size: .82rem;
+}
+.hero-playback-icon { width: 11px; height: 12px; clip-path: polygon(0 0, 100% 50%, 0 100%); background: currentColor; }
+.hero-playback.is-playing .hero-playback-icon {
+  clip-path: none;
+  background: linear-gradient(90deg, currentColor 0 34%, transparent 34% 66%, currentColor 66% 100%);
+}
+.hero-sound { justify-content: center; width: 42px; padding: 0; }
+.hero-sound-icon { position: relative; width: 18px; height: 18px; }
+.hero-sound-icon::before, .hero-sound-icon::after { content: ""; position: absolute; }
+.hero-sound-icon::before {
+  top: 2px;
+  left: 0;
+  width: 10px;
+  height: 14px;
+  background: currentColor;
+  clip-path: polygon(0 30%, 40% 30%, 100% 0, 100% 100%, 40% 70%, 0 70%);
+}
+.hero-sound-icon::after {
+  right: 0;
+  top: 6px;
+  width: 7px;
+  height: 7px;
+  background: linear-gradient(45deg, transparent 42%, currentColor 42% 58%, transparent 58%),
+              linear-gradient(-45deg, transparent 42%, currentColor 42% 58%, transparent 58%);
+}
+.hero-sound[aria-pressed="true"] .hero-sound-icon::after {
+  top: 3px;
+  width: 6px;
+  height: 12px;
+  border-right: 2px solid currentColor;
+  border-radius: 0 60% 60% 0;
+  background: transparent;
+}
+.stats { background: var(--bg); border-block: 1px solid var(--line); border-top-color: var(--primary); }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+.stats-grid > div { display: flex; flex-direction: column-reverse; justify-content: center; min-width: 0; min-height: 115px; padding: 13px clamp(7px, 2.3vw, 34px); border-right: 1px solid var(--line); }
+.stats-grid > div:first-child { padding-left: 0; }
+.stats-grid > div:last-child { border-right: 0; }
+.stats-grid dt { color: var(--muted); font-size: .88rem; }
+.stats-grid dd { color: var(--accent); font-size: clamp(1.55rem, 3vw, 3rem); font-weight: 680; line-height: 1.15; letter-spacing: -.055em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.stats-grid dd span { font-size: .64em; }
+.section { padding-block: clamp(53px, 7vw, 106px); scroll-margin-top: calc(var(--header-height) + 1px); }
+.section-heading { display: flex; justify-content: space-between; align-items: end; gap: 18px 38px; margin-bottom: 28px; }
+.section-heading h2 { margin-top: 7px; font-weight: 720; font-size: clamp(2.55rem, 4.4vw, 4.85rem); letter-spacing: -.07em; line-height: 1; }
+.section-heading h2 span { color: var(--accent); }
+.section-heading > p { max-width: 415px; color: var(--muted); }
+.gallery-toolbar, .gallery-layer-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+.gallery-toolbar { justify-content: space-between; margin-bottom: 12px; scroll-margin-top: 72px; }
+.segmented { display: flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.segmented button { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 6px 10px; min-height: 35px; border: 0; border-radius: 5px; color: var(--muted); font-size: .85rem; font-weight: 610; background: transparent; }
+.segmented button:hover { color: var(--ink); background: var(--table-header); }
+.segmented button[aria-pressed="true"] { color: var(--on-primary); background: var(--primary); }
+.depth-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  white-space: nowrap;
+  font: .72rem/1 var(--mono);
+}
+.depth-key i { display: block; width: clamp(43px, 7vw, 84px); height: 6px; border-radius: 4px; background: linear-gradient(90deg,#30123b,#2dbce9,#9efc36,#ffa020,#7a0503); }
+.scene-gallery picture { display: block; }
+.scene-gallery img { display: block; max-width: 100%; width: auto; height: auto; border-radius: 8px; }
+.gallery-status { margin-top: 8px; color: var(--muted); font-size: .86rem; }
+.dataset { background: var(--bg); border-block: 1px solid var(--line); }
+.distribution, .benchmark-table {
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--bg);
+}
+.distribution { padding: clamp(13px, 2.7vw, 37px); }
+.distribution-controls {
+  display: grid;
+  grid-template-columns: minmax(220px, .76fr) minmax(0, 1.24fr);
+  gap: clamp(12px, 4vw, 54px);
+  align-items: center;
+}
+.distribution-figure { position: relative; width: min(100%, 355px); justify-self: center; }
+.distribution-figure canvas { display: block; width: 100%; height: auto; aspect-ratio: 1; }
+.distribution-total {
+  position: absolute;
+  inset: 0 0 auto;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+.distribution-total strong { font: 640 clamp(1.07rem, 2vw, 1.65rem)/1 var(--mono); letter-spacing: -.08em; }
+.distribution-total span { margin-top: 4px; color: var(--muted); font-size: .78rem; }
+.distribution-figure figcaption { text-align: center; color: var(--muted); font-size: .78rem; }
+.distribution-figure figcaption span { color: var(--ink); }
+.distribution-legend h3, .example-heading h3, .benchmark-table h3 {
+  font-size: clamp(1.27rem, 2.15vw, 2rem);
+  font-weight: 650;
+  line-height: 1.1;
+  letter-spacing: -.035em;
+}
+.category-list {
+  margin-block: 13px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+}
+.category-option {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 5px 7px;
+  min-height: 39px;
+  padding: 6px 9px 6px 23px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  text-align: left;
+  font-size: .84rem;
+  line-height: 1.22;
+}
+.category-option::before {
+  position: absolute;
+  top: calc(50% - 4px);
+  left: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--category-color);
+  content: "";
+}
+.category-option > span:last-child { color: var(--muted); font: .75rem/1 var(--mono); white-space: nowrap; }
+.category-option:hover, .category-option[aria-pressed="true"] { background: var(--accent-bg); border-color: var(--accent-line); }
+.category-option[aria-pressed="true"] { box-shadow: inset 2px 0 var(--primary); }
+.category-option[aria-pressed="true"] > span:first-child { color: var(--accent); }
+.subcategory-field { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 14px; color: var(--muted); font-size: .86rem; }
+.subcategory-field select {
+  appearance: none;
+  width: 17rem;
+  min-width: 0;
+  min-height: 37px;
+  max-width: 100%;
+  padding: 5px 33px 5px 11px;
+  border: 1px solid #b8bbc9;
+  border-radius: 6px;
+  color: var(--ink);
+  background: linear-gradient(45deg, transparent 50%, var(--muted) 50%) calc(100% - 15px) 51%/5px 5px no-repeat,
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%) calc(100% - 10px) 51%/5px 5px no-repeat, var(--bg);
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.category-example { scroll-margin-top: 76px; margin-top: 25px; padding-top: 18px; border-top: 1px solid var(--line); }
+.example-heading { margin-bottom: 12px; }
+.example-heading h3 { margin-top: 5px; }
+.benchmark-table + .benchmark-table { margin-top: 18px; }
+.benchmark-table-intro { padding: clamp(15px, 2.2vw, 29px); }
+.benchmark-table-intro p { margin-top: 8px; color: var(--muted); font-size: .875rem; letter-spacing: -.006em; }
+.table-scroll { overflow-x: auto; }
+.table-scroll:focus-visible { outline-offset: -2px; }
+.benchmark-table table { width: 100%; min-width: 920px; border-spacing: 0; font-variant-numeric: tabular-nums; font-size: .87rem; }
+.benchmark-table table.with-camera { min-width: 990px; }
+.benchmark-table th, .benchmark-table td { padding: 9px 10px; border-top: 1px solid var(--line); white-space: nowrap; }
+.benchmark-table td { text-align: right; }
+.benchmark-table td.best { color: var(--sage-ink); font-weight: 730; background: var(--sage-tint); }
+.benchmark-table td.second { color: var(--sand-ink); background: var(--sand-tint); text-decoration: underline; text-underline-offset: 3px; }
+.benchmark-table thead { color: var(--muted); background: var(--table-header); }
+.benchmark-table thead tr:nth-child(2) th { text-align: right; }
+.benchmark-table th[scope="colgroup"] { border-left: 1px solid var(--line); }
+.benchmark-table tr:not(.table-group) > th[scope="row"], .benchmark-table thead tr:first-child > th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  padding-left: clamp(13px, 2.1vw, 29px);
+  background: var(--bg);
+  border-right: 1px solid var(--line);
+  text-align: left;
+  font-weight: 620;
+}
+.benchmark-table thead tr:first-child > th:first-child { background: var(--table-header); color: var(--ink); }
+.benchmark-table tbody tr:not(.table-group):hover td, .benchmark-table tbody tr:not(.table-group):hover th { background: var(--surface); }
+.benchmark-table .table-group th { padding-left: clamp(13px, 2.1vw, 29px); text-align: left; color: var(--ink); background: var(--table-header); }
+.benchmark-table .with-camera tbody td:nth-child(2) { text-align: center; color: var(--muted); }
+.benchmark-table .table-note { padding: 11px clamp(13px, 2.1vw, 29px); border-top: 1px solid var(--line); color: var(--muted); font-size: .83rem; }
+.comparison { padding-bottom: 0; }
+.comparison-table { overflow: hidden; }
+.comparison-table table { min-width: 920px; }
+.comparison-table th, .comparison-table td { text-align: center; }
+.comparison-table tr > th:first-child { text-align: left; }
+.comparison-table .group-start > * { border-top-color: #bfc1cf; }
+.comparison-table .dataset-primary > td, .comparison-table tr.dataset-primary > th[scope="row"] {
+  background: var(--accent-bg);
+  border-top: 1px solid var(--accent-line);
+  color: var(--accent);
+  font-weight: 680;
+}
+.comparison-table tbody tr.dataset-primary:hover > :is(td, th) { background: var(--accent-hover); }
+.comparison-table .feature { font: 650 1.04rem/1 var(--sans); }
+.comparison-table .available, .comparison-key .available b { color: var(--sage-ink); }
+.comparison-table .partial, .comparison-key .partial b { color: var(--sand-ink); }
+.comparison-table .absent, .comparison-key .absent b { color: var(--muted); }
+.comparison-table .unspecified, .comparison-key .unspecified b { color: var(--muted); }
+.comparison-notes { padding: 11px clamp(13px, 2.1vw, 29px) 15px; border-top: 1px solid var(--line); color: var(--muted); font-size: .83rem; }
+.comparison-key { display: flex; flex-wrap: wrap; gap: 6px 16px; color: var(--ink); }
+.comparison-key b { margin-right: 4px; }
+.related-work { padding-top: 1.25rem; }
+.related-work ul { margin: .25em 0 0; padding-inline-start: 1.25em; }
+.related-work a { color: var(--accent); }
+.related-work a:hover, .related-work a:focus-visible { text-decoration: underline; text-underline-offset: .18em; }
+.site-footer { border-top: 1px solid var(--line); }
+.footer-bar { display: flex; justify-content: space-between; align-items: center; gap: 15px; min-height: 82px; }
+@media (max-width: 850px) {
+  .section-heading { align-items: start; flex-direction: column; }
+}
+@media (max-width: 650px) {
+  h1 { font-size: clamp(2.9rem, 11vw, 4.45rem); }
+  .hero-controls { bottom: 12px; }
+  .distribution-controls { grid-template-columns: 1fr; }
+}
+@media (max-width: 850px) {
+  :root { --header-height: 58px; }
+  .header-inner { grid-template-columns: auto 1fr auto; gap: 12px; }
+  nav { justify-content: end; gap: clamp(9px, 3.3vw, 15px); }
+  nav a { font-size: .81rem; }
+  .nav-wide { display: none; }
+  .wordmark { font-size: 1.02rem; }
+  .mark { margin-right: 5px; }
+}
+@media (max-width: 535px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .stats-grid > div { min-height: 75px; padding-left: 13px; }
+  .stats-grid > div:nth-child(2) { border-right: 0; }
+  .stats-grid > div:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .stats-grid > div:nth-child(3) { padding-left: 0; }
+  .gallery-toolbar .segmented button { min-height: 30px; padding: 4px 8px; }
+  .category-option { font-size: .76rem; }
+  .category-option > span:last-child { font-size: .69rem; }
+  .footer-bar { flex-wrap: wrap; padding-block: 15px; }
+}
+@media (max-width: 550px) {
+  :root { --header-height: 74px; }
+  .header-inner { grid-template-columns: 1fr auto; gap: 4px 10px; padding-block: 6px; }
+  .header-lab-logo { grid-column: 2; grid-row: 1; }
+  .header-inner nav { grid-column: 1 / -1; grid-row: 2; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+}
+  </style>
+</head>
+<body id="top">
+  <a class="skip" href="#dataset">Skip to dataset composition</a>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a href="#top" class="wordmark" aria-label="HABI-12K home"><span class="mark" aria-hidden="true"></span>HABI<span class="wordmark-accent"><span class="brand-dash">–</span>12K</span></a>
+      <nav aria-label="Main navigation">
+        <a href="#dataset" aria-label="Dataset composition">Dataset<span class="nav-wide"> composition</span></a><a href="#comparison" class="nav-wide">Comparison</a><a href="#benchmark">HABI-Bench</a>
+        <a class="nav-hub" href="https://huggingface.co/datasets/Inception3D/HABI-12K">Download</a>
+      </nav>
+      <svg class="header-lab-logo" viewBox="425 74 1137 823" width="1137" height="823" role="img" aria-label="Inception3D Lab">
+        <image href="asset/inception-brand.webp" width="1984" height="1984"></image>
+      </svg>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-media">
+        <img src="asset/hero-habi12k-poster.webp" alt="" width="1440" height="810" fetchpriority="high">
+        <video id="hero-film" muted loop playsinline preload="none" aria-label="HABI-12K dataset video"
+               data-webm="asset/hero-habi12k-palette-1080p60.webm"></video>
+        <div class="hero-controls">
+          <button class="hero-playback" id="hero-playback" type="button" aria-controls="hero-film" hidden>
+            <span class="hero-playback-icon" aria-hidden="true"></span><span id="hero-playback-label">Play video</span>
+          </button>
+          <button class="hero-sound" id="hero-sound" type="button" aria-controls="hero-film"
+                  aria-label="Video sound" aria-pressed="false" title="Unmute video" hidden>
+            <span class="hero-sound-icon" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
+      <div class="hero-copy shell">
+        <h1 id="hero-title">HABI<span><span class="brand-dash">–</span>12K</span></h1>
+        <p class="hero-paper-title">A Synthetic Indoor World Dataset</p>
+        <ul class="hero-authors" aria-label="Authors">
+          <li><a href="https://sibowu.com/">Sibo Wu</a></li>
+          <li><a href="https://github.com/Yubel426">Xiaoqian Liang</a></li>
+          <li><a href="https://wang-zidu.github.io/">Zidu Wang</a></li>
+          <li><a href="https://apchenstu.github.io/">Anpei Chen</a></li>
+        </ul>
+        <p class="hero-affiliation">Inception3D Lab, Westlake University</p>
+        <p class="hero-summary">
+          <span>Professionally authored interiors with path-traced panoramas</span>
+          <span>and ground-truth geometry along <span class="unbroken">continuous camera trajectories.</span></span>
+        </p>
+        <div class="hero-actions">
+          <button type="button" disabled>
+            <img class="resource-icon" src="asset/arxiv.svg" alt=""> Paper(In coming)
+          </button>
+          <a class="hero-download" href="https://huggingface.co/datasets/Inception3D/HABI-12K">
+            <img class="resource-icon" src="asset/huggingface.svg" alt=""> Hugging Face
+          </a>
+          <a href="https://github.com/Inception3D/HABI-12K">
+            <img class="resource-icon" src="asset/github.svg" alt=""> Code
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats" aria-label="Dataset at a glance">
+      <dl class="shell stats-grid">
+        <div><dt>Indoor scenes</dt><dd>12,081</dd></div>
+        <div><dt>Path-traced panoramas</dt><dd>2.16M</dd></div>
+        <div><dt>Major categories</dt><dd>15</dd></div>
+        <div><dt>Full-sphere resolution</dt><dd>2048<span> × </span>1024</dd></div>
+      </dl>
+    </section>
+
+    <section class="dataset section" id="dataset" aria-labelledby="dataset-title">
+      <div class="shell">
+        <header class="section-heading">
+          <div><p class="eyebrow">Dataset composition</p><h2 id="dataset-title">From living rooms to public venues<span>.</span></h2></div>
+        </header>
+        <article class="distribution">
+          <div class="distribution-controls">
+            <figure class="distribution-figure">
+              <canvas id="distribution-chart" width="360" height="360" aria-label="Scene category sunburst. The category controls provide keyboard access to all slices."></canvas>
+              <div class="distribution-total"><strong id="distribution-count">11,564</strong><span>scenes shown</span></div>
+              <figcaption>Inner ring <span>Major categories</span> · Outer ring <span>Subcategories</span></figcaption>
+            </figure>
+            <div class="distribution-legend">
+              <h3>Scene share by category</h3>
+              <div class="category-list" id="category-list" role="group" aria-label="Major scene category"></div>
+              <label class="subcategory-field">Subcategory <select id="subcategory"></select></label>
+            </div>
+          </div>
+          <div class="category-example" id="category-example">
+            <div class="example-heading" aria-live="polite">
+              <p class="eyebrow" id="example-category" hidden></p>
+              <h3 id="example-name">Residential</h3>
+            </div>
+            <div class="gallery-toolbar" id="explore">
+              <div class="segmented" role="group" aria-label="Projection">
+                <button type="button" data-mode="perspective" aria-pressed="true"><span class="icon icon-frame" aria-hidden="true"></span>Perspective</button>
+                <button type="button" data-mode="panorama" aria-pressed="false"><span class="icon icon-globe" aria-hidden="true"></span>360° Panorama</button>
+              </div>
+              <div class="gallery-layer-controls">
+                <div class="segmented" role="group" aria-label="Display layer">
+                  <button type="button" data-layer="rgb" aria-pressed="true">RGB</button>
+                  <button type="button" data-layer="depth" aria-pressed="false">Depth</button>
+                  <button type="button" data-layer="normal" aria-pressed="false">Normals</button>
+                </div>
+                <div id="gallery-depth" class="depth-key" aria-label="Logarithmic metric ray depth scale" hidden><span>0 m</span><i></i><span>12 m+</span></div>
+              </div>
+            </div>
+            <div class="scene-gallery" id="scene-gallery"></div>
+            <p class="gallery-status" id="gallery-status" role="status" hidden>This category image could not be loaded.</p>
+          </div>
+        </article>
+        <noscript><p>Enable JavaScript to view the scene galleries.</p></noscript>
+      </div>
+    </section>
+
+    <section class="shell section comparison" id="comparison" aria-labelledby="comparison-title">
+      <header class="section-heading">
+        <div><h2 id="comparison-title">Dataset comparison<span>.</span></h2></div>
+        <p>Scene and frame counts, geometric supervision, and camera coverage across 3D scene datasets.</p>
+      </header>
+      <article class="benchmark-table comparison-table">
+        <div class="table-scroll" tabindex="0" role="region" aria-labelledby="comparison-title">
+          <table aria-describedby="comparison-notes">
+            <thead>
+              <tr><th scope="col">Dataset</th><th scope="col">Type</th><th scope="col">Scenes</th><th scope="col">Frames</th><th scope="col">Depth</th><th scope="col">Normals</th><th scope="col">Trajectory</th><th scope="col">Panorama</th><th scope="col">Multi-room</th><th scope="col">Non-residential</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Stanford 2D-3D-S</th><td>real</td><td>270 rooms</td><td>72K</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature available" title="Available" aria-label="Available">✓</td></tr>
+              <tr><th scope="row">Matterport3D</th><td>real</td><td>90 (2,056 rooms)</td><td>194K</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature partial" title="Partially available" aria-label="Partially available">◦</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature partial" title="Partially available" aria-label="Partially available">◦</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature partial" title="Partially available" aria-label="Partially available">◦</td></tr>
+              <tr><th scope="row">ScanNet</th><td>real</td><td>1,513</td><td>2.5M</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature partial" title="Partially available" aria-label="Partially available">◦</td><td class="feature available" title="Available" aria-label="Available">✓</td></tr>
+              <tr><th scope="row">ARKitScenes</th><td>real</td><td>1,661</td><td>450K</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td></tr>
+              <tr><th scope="row">ScanNet++</th><td>real</td><td>460</td><td>3.98M</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature partial" title="Partially available" aria-label="Partially available">◦</td><td class="feature available" title="Available" aria-label="Available">✓</td></tr>
+              <tr><th scope="row">DL3DV-10K</th><td>real</td><td>10,510</td><td>51.2M</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature partial" title="Partially available" aria-label="Partially available">◦</td><td class="feature available" title="Available" aria-label="Available">✓</td></tr>
+              <tr class="group-start"><th scope="row">Replica</th><td>scan, rendered</td><td>18</td><td>—</td><td class="feature partial" title="Partially available" aria-label="Partially available">◦</td><td class="feature partial" title="Partially available" aria-label="Partially available">◦</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature partial" title="Partially available" aria-label="Partially available">◦</td><td class="feature partial" title="Partially available" aria-label="Partially available">◦</td></tr>
+              <tr><th scope="row">InteriorNet</th><td>synthetic</td><td>10K layouts</td><td>20M</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature partial" title="Partially available" aria-label="Partially available">◦</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature partial" title="Partially available" aria-label="Partially available">◦</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td></tr>
+              <tr><th scope="row">Structured3D</th><td>synthetic</td><td>3,500 (21,835 rooms)</td><td>196.5K</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td></tr>
+              <tr>
+                <th scope="row">3D-FRONT</th><td>synthetic</td><td>6,813 houses (18,968 furnished rooms)</td><td title="CAD scenes and viewpoints for on-demand rendering">—</td>
+                <td class="feature partial" title="Renderable with Trescope" aria-label="Partially available through Trescope rendering">◦</td>
+                <td class="feature partial" title="Renderable with Trescope" aria-label="Partially available through Trescope rendering">◦</td>
+                <td class="feature absent" title="Discrete camera viewpoints" aria-label="Continuous trajectories unavailable">×</td>
+                <td class="feature absent" title="Unavailable in the original release" aria-label="Unavailable">×</td>
+                <td class="feature available" title="Multi-room CAD houses" aria-label="Available">✓</td>
+                <td class="feature unspecified" title="Commercial or public venue coverage is unspecified" aria-label="Unspecified">—</td>
+              </tr>
+              <tr><th scope="row">Hypersim</th><td>synthetic</td><td>461</td><td>74.6K</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature available" title="Available" aria-label="Available">✓</td></tr>
+              <tr><th scope="row">HSSD-200</th><td>synthetic</td><td>211</td><td>—</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td></tr>
+              <tr><th scope="row">ASE</th><td>synthetic</td><td>100K</td><td>58M</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td></tr>
+              <tr><th scope="row">MegaSynth</th><td>procedural</td><td>700K</td><td>48 / scene</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature unspecified" title="Unspecified" aria-label="Unspecified">—</td></tr>
+              <tr><th scope="row">InternScenes</th><td>mixed</td><td>39,870</td><td>—</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature partial" title="Partially available" aria-label="Partially available">◦</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td></tr>
+              <tr><th scope="row">InteriorGS</th><td>synthetic</td><td>1,000</td><td>—</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature available" title="Available" aria-label="Available">✓</td></tr>
+              <tr><th scope="row">Realsee3D</th><td>synthetic + real</td><td>10,000</td><td>299K</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature absent" title="Unavailable" aria-label="Unavailable">×</td></tr>
+              <tr class="group-start dataset-primary"><th scope="row">HABI-12K</th><td>synthetic</td><td>12,081</td><td>2.16M</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature available" title="Available" aria-label="Available">✓</td><td class="feature available" title="Available" aria-label="Available">✓</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="comparison-notes" id="comparison-notes">
+          <p class="comparison-key"><span class="available"><b aria-hidden="true">✓</b> Available</span><span class="partial"><b aria-hidden="true">◦</b> Partially available</span><span class="absent"><b aria-hidden="true">×</b> Unavailable</span><span class="unspecified"><b aria-hidden="true">—</b> Unspecified</span></p>
+        </div>
+      </article>
+    </section>
+
+    <section class="shell section benchmark" id="benchmark" aria-labelledby="bench-title">
+      <header class="section-heading">
+        <div><p class="eyebrow">Evaluation</p><h2 id="bench-title">HABI-Bench<span>.</span></h2></div>
+      </header>
+      <article class="benchmark-table" aria-labelledby="geometry-table-title">
+        <div class="benchmark-table-intro"><h3 id="geometry-table-title">Multi-view geometry</h3><p>Depth AbsRel and δ₁ (%) use per-scene median scaling. Camera ATE (m) uses Sim(3) alignment. Pose AUC@30 (%) is computed over all view pairs.</p></div>
+        <div class="table-scroll" tabindex="0" role="region" aria-labelledby="geometry-table-title">
+          <table>
+            <thead>
+              <tr><th scope="col" rowspan="2">Method</th><th scope="colgroup" colspan="4">8 views</th><th scope="colgroup" colspan="4">16 views</th><th scope="colgroup" colspan="4">32 views</th></tr>
+              <tr><th scope="col">AbsRel ↓</th><th scope="col">δ₁ ↑</th><th scope="col">ATE ↓</th><th scope="col">AUC ↑</th><th scope="col">AbsRel ↓</th><th scope="col">δ₁ ↑</th><th scope="col">ATE ↓</th><th scope="col">AUC ↑</th><th scope="col">AbsRel ↓</th><th scope="col">δ₁ ↑</th><th scope="col">ATE ↓</th><th scope="col">AUC ↑</th></tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">VGGT-Ω</th><td class="best">0.0438</td><td class="best">97.3</td><td class="best">0.133</td><td class="best">93.8</td><td class="best">0.0423</td><td class="best">97.4</td><td class="best">0.087</td><td class="best">95.3</td><td class="best">0.0431</td><td class="best">97.4</td><td class="best">0.149</td><td class="best">95.4</td></tr>
+              <tr><th scope="row">DA3-Giant 1.1</th><td class="second">0.0474</td><td class="second">97.0</td><td>0.288</td><td>84.5</td><td class="second">0.0482</td><td class="second">97.1</td><td>0.250</td><td>86.5</td><td class="second">0.0535</td><td class="second">96.8</td><td class="second">0.206</td><td>87.3</td></tr>
+              <tr><th scope="row">π<sup>3</sup></th><td>0.0649</td><td>96.8</td><td>0.338</td><td>86.4</td><td>0.0632</td><td>96.7</td><td>0.247</td><td>88.9</td><td>0.0687</td><td>96.4</td><td>0.283</td><td>89.2</td></tr>
+              <tr><th scope="row">Déjà View</th><td>0.0662</td><td>95.6</td><td>0.370</td><td class="second">87.3</td><td>0.0681</td><td>95.8</td><td>0.280</td><td class="second">90.6</td><td>0.0739</td><td>95.6</td><td>0.263</td><td class="second">92.0</td></tr>
+              <tr><th scope="row">WorldMirror 2.0</th><td>0.0601</td><td>96.8</td><td>0.552</td><td>76.9</td><td>0.0648</td><td>96.8</td><td>0.387</td><td>82.4</td><td>0.0708</td><td>96.4</td><td>0.350</td><td>85.1</td></tr>
+              <tr><th scope="row">MapAnything</th><td>0.1042</td><td>95.6</td><td class="second">0.284</td><td>83.8</td><td>0.1346</td><td>95.3</td><td class="second">0.226</td><td>85.2</td><td>0.1404</td><td>95.0</td><td>0.238</td><td>85.8</td></tr>
+              <tr><th scope="row">R<sup>3</sup></th><td>0.0674</td><td>95.0</td><td>0.881</td><td>63.6</td><td>0.0709</td><td>94.6</td><td>0.870</td><td>65.6</td><td>0.0727</td><td>94.6</td><td>0.674</td><td>70.2</td></tr>
+              <tr><th scope="row">VGGT</th><td>0.0753</td><td>94.4</td><td>0.724</td><td>69.0</td><td>0.0840</td><td>94.1</td><td>0.576</td><td>72.9</td><td>0.0889</td><td>93.6</td><td>0.564</td><td>74.0</td></tr>
+              <tr><th scope="row">OmniVGGT</th><td>0.0815</td><td>93.3</td><td>1.035</td><td>61.6</td><td>0.0895</td><td>93.1</td><td>1.021</td><td>63.2</td><td>0.1009</td><td>92.4</td><td>1.032</td><td>63.5</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-note"><strong>Bold</strong> and <u>underlined</u> scores indicate first and second place.</p>
+      </article>
+      <article class="benchmark-table" aria-labelledby="nvs-table-title">
+        <div class="benchmark-table-intro"><h3 id="nvs-table-title">Novel view synthesis</h3><p>Scores are measured on target views. Camera inputs for reconstruction are shown as K (ground-truth intrinsics) and P (ground-truth poses).</p></div>
+        <div class="table-scroll" tabindex="0" role="region" aria-labelledby="nvs-table-title">
+          <table class=with-camera>
+            <thead>
+              <tr><th scope="col" rowspan="2">Method</th><th scope="col" rowspan="2">Camera</th><th scope="colgroup" colspan="3">2 views</th><th scope="colgroup" colspan="3">4 views</th><th scope="colgroup" colspan="3">8 views</th><th scope="colgroup" colspan="3">16 views</th></tr>
+              <tr><th scope="col">PSNR ↑</th><th scope="col">SSIM ↑</th><th scope="col">LPIPS ↓</th><th scope="col">PSNR ↑</th><th scope="col">SSIM ↑</th><th scope="col">LPIPS ↓</th><th scope="col">PSNR ↑</th><th scope="col">SSIM ↑</th><th scope="col">LPIPS ↓</th><th scope="col">PSNR ↑</th><th scope="col">SSIM ↑</th><th scope="col">LPIPS ↓</th></tr>
+            </thead>
+            <tbody>
+              <tr class="table-group"><th scope="rowgroup" colspan="14">With ground-truth poses</th></tr>
+              <tr><th scope="row">ReSplat</th><td>K, P</td><td class="best">21.73</td><td class="best">0.762</td><td>0.373</td><td class="best">24.27</td><td class="best">0.809</td><td>0.308</td><td class="best">25.97</td><td class="best">0.842</td><td>0.263</td><td class="best">27.40</td><td class="best">0.865</td><td class="second">0.232</td></tr>
+              <tr><th scope="row">LVSM</th><td>K, P</td><td>20.46</td><td>0.732</td><td class="second">0.318</td><td>22.37</td><td>0.772</td><td class="best">0.269</td><td class="second">23.88</td><td>0.800</td><td class="best">0.232</td><td class="second">24.42</td><td>0.808</td><td class="best">0.221</td></tr>
+              <tr><th scope="row">SplatAnything</th><td>K, P</td><td>20.26</td><td class="second">0.740</td><td class="best">0.314</td><td>22.40</td><td class="second">0.791</td><td class="best">0.269</td><td>23.50</td><td class="second">0.812</td><td class="second">0.240</td><td>24.30</td><td class="second">0.826</td><td class="best">0.221</td></tr>
+              <tr><th scope="row">DA3-Giant 1.1 (GS)</th><td>K, P</td><td>15.76</td><td>0.599</td><td>0.500</td><td>20.07</td><td>0.728</td><td>0.359</td><td>21.87</td><td>0.760</td><td>0.299</td><td>23.00</td><td>0.772</td><td>0.267</td></tr>
+              <tr><th scope="row">WorldMirror 2.0 (GS)</th><td>K, P</td><td>18.40</td><td>0.665</td><td>0.367</td><td>20.86</td><td>0.739</td><td>0.313</td><td>22.03</td><td>0.768</td><td>0.276</td><td>22.84</td><td>0.788</td><td>0.255</td></tr>
+              <tr><th scope="row">DepthSplat</th><td>K, P</td><td class="second">21.18</td><td>0.737</td><td>0.333</td><td class="second">22.80</td><td class="second">0.791</td><td class="second">0.278</td><td>22.57</td><td>0.802</td><td>0.265</td><td>21.45</td><td>0.787</td><td>0.283</td></tr>
+              <tr><th scope="row">YoNoSplat</th><td>K, P</td><td>17.80</td><td>0.649</td><td>0.462</td><td>19.51</td><td>0.685</td><td>0.419</td><td>19.97</td><td>0.693</td><td>0.400</td><td>20.17</td><td>0.698</td><td>0.396</td></tr>
+              <tr><th scope="row">YoNoSplat</th><td>P</td><td>15.71</td><td>0.600</td><td>0.512</td><td>17.21</td><td>0.634</td><td>0.482</td><td>17.60</td><td>0.641</td><td>0.471</td><td>17.83</td><td>0.646</td><td>0.470</td></tr>
+            </tbody>
+            <tbody>
+              <tr class="table-group"><th scope="rowgroup" colspan="14">Without ground-truth poses</th></tr>
+              <tr><th scope="row">SplatAnything</th><td>—</td><td class="best">18.00</td><td class="best">0.648</td><td class="best">0.371</td><td class="best">19.55</td><td class="second">0.680</td><td class="best">0.332</td><td class="best">20.67</td><td class="second">0.709</td><td class="best">0.298</td><td class="best">21.75</td><td class="best">0.736</td><td class="best">0.267</td></tr>
+              <tr><th scope="row">DA3-Giant 1.1 (GS)</th><td>—</td><td>16.13</td><td class="second">0.613</td><td>0.504</td><td class="second">19.37</td><td class="best">0.704</td><td>0.400</td><td class="second">20.42</td><td class="best">0.721</td><td>0.357</td><td class="second">21.27</td><td class="second">0.730</td><td>0.329</td></tr>
+              <tr><th scope="row">WorldMirror 2.0 (GS)</th><td>—</td><td class="second">16.60</td><td>0.580</td><td class="second">0.424</td><td>18.89</td><td>0.653</td><td class="second">0.370</td><td>20.08</td><td>0.686</td><td class="second">0.328</td><td>21.01</td><td>0.711</td><td class="second">0.301</td></tr>
+              <tr><th scope="row">AnySplat</th><td>—</td><td>13.65</td><td>0.471</td><td>0.531</td><td>15.92</td><td>0.554</td><td>0.464</td><td>16.97</td><td>0.593</td><td>0.424</td><td>17.71</td><td>0.614</td><td>0.397</td></tr>
+              <tr><th scope="row">YoNoSplat</th><td>—</td><td>15.61</td><td>0.600</td><td>0.510</td><td>16.94</td><td>0.627</td><td>0.477</td><td>17.37</td><td>0.638</td><td>0.458</td><td>17.58</td><td>0.643</td><td>0.453</td></tr>
+              <tr><th scope="row">E-RayZer</th><td>—</td><td>12.02</td><td>0.527</td><td>0.571</td><td>14.61</td><td>0.587</td><td>0.545</td><td>15.22</td><td>0.602</td><td>0.525</td><td>15.11</td><td>0.607</td><td>0.531</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-note"><strong>Bold</strong> and <u>underlined</u> scores indicate first and second place within each camera group.</p>
+      </article>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell related-work" id="related-work">
+      <p>Related work</p>
+      <ul>
+        <li><a href="https://dl3dv-10k.github.io/DL3DV-10K/">DL3DV-10K: A Large-Scale Scene Dataset for Deep Learning-based 3D Vision</a></li>
+        <li><a href="https://github.com/apple-aiml-research/ml-hypersim">Hypersim: A Photorealistic Synthetic Dataset for Holistic Indoor Scene Understanding</a></li>
+        <li><a href="https://dataset.realsee.ai/">Realsee3D Dataset – Large-Scale Multi-View RGB-D Indoor Dataset</a></li>
+      </ul>
+    </div>
+    <div class="shell footer-bar"><a href="#top" class="wordmark"><span class="mark" aria-hidden="true"></span>HABI<span class="wordmark-accent"><span class="brand-dash">–</span>12K</span></a><a href="#top">Back to top</a></div>
+  </footer>
+<script>
+'use strict';
+
+(() => {
+  const film = document.getElementById('hero-film');
+  const playback = document.getElementById('hero-playback');
+  const label = document.getElementById('hero-playback-label');
+  const sound = document.getElementById('hero-sound');
+  const source = film.canPlayType('video/webm; codecs="vp9"') && film.dataset.webm;
+  if (!source) return;
+  const motion = matchMedia('(prefers-reduced-motion: reduce)');
+  let wantsPlayback = !motion.matches;
+  let onScreen = true;
+
+  function updatePlaybackControl() {
+    const playing = !film.paused;
+    label.textContent = playing ? 'Pause video' : 'Play video';
+    playback.classList.toggle('is-playing', playing);
+  }
+
+  function updateSoundControl() {
+    sound.setAttribute('aria-pressed', String(!film.muted));
+    sound.title = film.muted ? 'Unmute video' : 'Mute video';
+  }
+
+  function syncPlayback() {
+    if (!wantsPlayback || !onScreen || document.hidden) {
+      film.pause();
+      return;
+    }
+    if (!film.hasAttribute('src')) film.src = source;
+    film.play().catch(updatePlaybackControl);
+  }
+
+  film.muted = true;
+  film.addEventListener('loadeddata', () => film.classList.add('has-frame'));
+  film.addEventListener('playing', updatePlaybackControl);
+  film.addEventListener('pause', updatePlaybackControl);
+  film.addEventListener('volumechange', updateSoundControl);
+  film.addEventListener('error', () => {
+    film.classList.remove('has-frame');
+    updatePlaybackControl();
+  });
+  playback.addEventListener('click', () => {
+    wantsPlayback = film.paused;
+    syncPlayback();
+  });
+  sound.addEventListener('click', () => {
+    film.muted = !film.muted;
+  });
+  motion.addEventListener('change', () => {
+    wantsPlayback = !motion.matches;
+    syncPlayback();
+  });
+  document.addEventListener('visibilitychange', syncPlayback);
+  new IntersectionObserver(([entry]) => {
+    onScreen = entry.isIntersecting;
+    syncPlayback();
+  }, { threshold: .05 }).observe(film.closest('.hero-media'));
+
+  playback.hidden = false;
+  sound.hidden = false;
+  syncPlayback();
+})();
+</script>
+<script>
+window.HABI_CATEGORIES = [{"name":"Residential","count":4657,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m00-perspective-rgb-wide.webp",1746,542],"compact":["collage-curated-m00-perspective-rgb-compact.webp",436,560]},"depth":{"wide":["collage-curated-m00-perspective-depth-wide.webp",1746,542],"compact":["collage-curated-m00-perspective-depth-compact.webp",436,560]},"normal":{"wide":["collage-curated-m00-perspective-normal-wide.webp",1746,542],"compact":["collage-curated-m00-perspective-normal-compact.webp",436,560]}},"panorama":{"rgb":{"wide":["collage-curated-m00-panorama-rgb-wide.webp",1810,504],"compact":["collage-curated-m00-panorama-rgb-compact.webp",452,520]},"depth":{"wide":["collage-curated-m00-panorama-depth-wide.webp",1810,504],"compact":["collage-curated-m00-panorama-depth-compact.webp",452,520]},"normal":{"wide":["collage-curated-m00-panorama-normal-wide.webp",1810,504],"compact":["collage-curated-m00-panorama-normal-compact.webp",452,520]}}},"color":"#3468B2","paletteIndex":0,"children":[{"name":"apartment / whole home","count":3872,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m00-s00-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m00-s00-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m00-s00-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m00-s00-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m00-s00-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m00-s00-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m00-s00-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m00-s00-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m00-s00-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m00-s00-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m00-s00-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m00-s00-panorama-normal-compact.webp",452,460]}}}},{"name":"bedroom","count":554,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m00-s01-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m00-s01-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m00-s01-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m00-s01-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m00-s01-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m00-s01-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m00-s01-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m00-s01-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m00-s01-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m00-s01-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m00-s01-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m00-s01-panorama-normal-compact.webp",452,460]}}}},{"name":"children's room","count":132,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m00-s02-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m00-s02-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m00-s02-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m00-s02-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m00-s02-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m00-s02-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m00-s02-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m00-s02-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m00-s02-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m00-s02-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m00-s02-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m00-s02-panorama-normal-compact.webp",452,460]}}}},{"name":"kitchen","count":34,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m00-s03-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m00-s03-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m00-s03-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m00-s03-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m00-s03-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m00-s03-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m00-s03-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m00-s03-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m00-s03-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m00-s03-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m00-s03-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m00-s03-panorama-normal-compact.webp",452,460]}}}},{"name":"study","count":23,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m00-s04-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m00-s04-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m00-s04-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m00-s04-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m00-s04-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m00-s04-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m00-s04-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m00-s04-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m00-s04-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m00-s04-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m00-s04-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m00-s04-panorama-normal-compact.webp",452,460]}}}},{"name":"dining room","count":13,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m00-s05-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m00-s05-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m00-s05-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m00-s05-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m00-s05-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m00-s05-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m00-s05-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m00-s05-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m00-s05-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m00-s05-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m00-s05-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m00-s05-panorama-normal-compact.webp",452,460]}}}},{"name":"living room","count":12,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m00-s06-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m00-s06-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m00-s06-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m00-s06-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m00-s06-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m00-s06-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m00-s06-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m00-s06-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m00-s06-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m00-s06-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m00-s06-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m00-s06-panorama-normal-compact.webp",452,460]}}}},{"name":"family room","count":10,"exampleCount":7,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m00-s07-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m00-s07-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m00-s07-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m00-s07-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m00-s07-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m00-s07-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m00-s07-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m00-s07-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m00-s07-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m00-s07-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m00-s07-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m00-s07-panorama-normal-compact.webp",452,460]}}}},{"name":"balcony / terrace","count":7,"exampleCount":5,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m00-s08-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m00-s08-perspective-rgb-compact.webp",436,374]},"depth":{"wide":["collage-curated-m00-s08-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m00-s08-perspective-depth-compact.webp",436,374]},"normal":{"wide":["collage-curated-m00-s08-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m00-s08-perspective-normal-compact.webp",436,374]}},"panorama":{"rgb":{"wide":["collage-curated-m00-s08-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m00-s08-panorama-rgb-compact.webp",452,344]},"depth":{"wide":["collage-curated-m00-s08-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m00-s08-panorama-depth-compact.webp",452,344]},"normal":{"wide":["collage-curated-m00-s08-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m00-s08-panorama-normal-compact.webp",452,344]}}}}]},{"name":"Hospitality","count":3691,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m01-perspective-rgb-wide.webp",1746,542],"compact":["collage-curated-m01-perspective-rgb-compact.webp",436,560]},"depth":{"wide":["collage-curated-m01-perspective-depth-wide.webp",1746,542],"compact":["collage-curated-m01-perspective-depth-compact.webp",436,560]},"normal":{"wide":["collage-curated-m01-perspective-normal-wide.webp",1746,542],"compact":["collage-curated-m01-perspective-normal-compact.webp",436,560]}},"panorama":{"rgb":{"wide":["collage-curated-m01-panorama-rgb-wide.webp",1810,504],"compact":["collage-curated-m01-panorama-rgb-compact.webp",452,520]},"depth":{"wide":["collage-curated-m01-panorama-depth-wide.webp",1810,504],"compact":["collage-curated-m01-panorama-depth-compact.webp",452,520]},"normal":{"wide":["collage-curated-m01-panorama-normal-wide.webp",1810,504],"compact":["collage-curated-m01-panorama-normal-compact.webp",452,520]}}},"color":"#E08A2E","paletteIndex":1,"children":[{"name":"hotel room","count":3166,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m01-s00-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m01-s00-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m01-s00-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m01-s00-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m01-s00-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m01-s00-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m01-s00-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m01-s00-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m01-s00-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m01-s00-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m01-s00-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m01-s00-panorama-normal-compact.webp",452,460]}}}},{"name":"hotel lobby","count":447,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m01-s01-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m01-s01-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m01-s01-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m01-s01-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m01-s01-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m01-s01-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m01-s01-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m01-s01-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m01-s01-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m01-s01-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m01-s01-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m01-s01-panorama-normal-compact.webp",452,460]}}}},{"name":"guesthouse room","count":54,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m01-s02-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m01-s02-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m01-s02-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m01-s02-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m01-s02-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m01-s02-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m01-s02-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m01-s02-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m01-s02-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m01-s02-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m01-s02-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m01-s02-panorama-normal-compact.webp",452,460]}}}},{"name":"holiday home","count":24,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m01-s03-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m01-s03-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m01-s03-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m01-s03-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m01-s03-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m01-s03-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m01-s03-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m01-s03-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m01-s03-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m01-s03-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m01-s03-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m01-s03-panorama-normal-compact.webp",452,460]}}}}]},{"name":"Leisure & culture","count":1056,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m02-perspective-rgb-wide.webp",1746,542],"compact":["collage-curated-m02-perspective-rgb-compact.webp",436,560]},"depth":{"wide":["collage-curated-m02-perspective-depth-wide.webp",1746,542],"compact":["collage-curated-m02-perspective-depth-compact.webp",436,560]},"normal":{"wide":["collage-curated-m02-perspective-normal-wide.webp",1746,542],"compact":["collage-curated-m02-perspective-normal-compact.webp",436,560]}},"panorama":{"rgb":{"wide":["collage-curated-m02-panorama-rgb-wide.webp",1810,504],"compact":["collage-curated-m02-panorama-rgb-compact.webp",452,520]},"depth":{"wide":["collage-curated-m02-panorama-depth-wide.webp",1810,504],"compact":["collage-curated-m02-panorama-depth-compact.webp",452,520]},"normal":{"wide":["collage-curated-m02-panorama-normal-wide.webp",1810,504],"compact":["collage-curated-m02-panorama-normal-compact.webp",452,520]}}},"color":"#2E9E6A","paletteIndex":2,"children":[{"name":"exhibition / gallery","count":444,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m02-s00-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m02-s00-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m02-s00-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m02-s00-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m02-s00-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m02-s00-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m02-s00-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m02-s00-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m02-s00-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m02-s00-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m02-s00-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m02-s00-panorama-normal-compact.webp",452,460]}}}},{"name":"club / lounge","count":347,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m02-s01-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m02-s01-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m02-s01-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m02-s01-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m02-s01-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m02-s01-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m02-s01-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m02-s01-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m02-s01-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m02-s01-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m02-s01-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m02-s01-panorama-normal-compact.webp",452,460]}}}},{"name":"theater / auditorium","count":112,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m02-s02-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m02-s02-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m02-s02-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m02-s02-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m02-s02-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m02-s02-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m02-s02-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m02-s02-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m02-s02-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m02-s02-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m02-s02-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m02-s02-panorama-normal-compact.webp",452,460]}}}},{"name":"game arcade","count":79,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m02-s03-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m02-s03-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m02-s03-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m02-s03-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m02-s03-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m02-s03-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m02-s03-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m02-s03-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m02-s03-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m02-s03-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m02-s03-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m02-s03-panorama-normal-compact.webp",452,460]}}}},{"name":"billiard hall","count":39,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m02-s04-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m02-s04-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m02-s04-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m02-s04-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m02-s04-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m02-s04-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m02-s04-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m02-s04-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m02-s04-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m02-s04-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m02-s04-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m02-s04-panorama-normal-compact.webp",452,460]}}}},{"name":"music / broadcast studio","count":23,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m02-s05-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m02-s05-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m02-s05-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m02-s05-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m02-s05-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m02-s05-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m02-s05-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m02-s05-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m02-s05-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m02-s05-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m02-s05-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m02-s05-panorama-normal-compact.webp",452,460]}}}},{"name":"cinema","count":11,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m02-s06-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m02-s06-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m02-s06-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m02-s06-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m02-s06-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m02-s06-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m02-s06-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m02-s06-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m02-s06-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m02-s06-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m02-s06-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m02-s06-panorama-normal-compact.webp",452,460]}}}},{"name":"karaoke","count":1,"exampleCount":1,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m02-s07-perspective-rgb-wide.webp",432,243],"compact":["collage-curated-m02-s07-perspective-rgb-compact.webp",216,122]},"depth":{"wide":["collage-curated-m02-s07-perspective-depth-wide.webp",432,243],"compact":["collage-curated-m02-s07-perspective-depth-compact.webp",216,122]},"normal":{"wide":["collage-curated-m02-s07-perspective-normal-wide.webp",432,243],"compact":["collage-curated-m02-s07-perspective-normal-compact.webp",216,122]}},"panorama":{"rgb":{"wide":["collage-curated-m02-s07-panorama-rgb-wide.webp",448,224],"compact":["collage-curated-m02-s07-panorama-rgb-compact.webp",224,112]},"depth":{"wide":["collage-curated-m02-s07-panorama-depth-wide.webp",448,224],"compact":["collage-curated-m02-s07-panorama-depth-compact.webp",224,112]},"normal":{"wide":["collage-curated-m02-s07-panorama-normal-wide.webp",448,224],"compact":["collage-curated-m02-s07-panorama-normal-compact.webp",224,112]}}}}]},{"name":"Office","count":601,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m03-perspective-rgb-wide.webp",1746,542],"compact":["collage-curated-m03-perspective-rgb-compact.webp",436,560]},"depth":{"wide":["collage-curated-m03-perspective-depth-wide.webp",1746,542],"compact":["collage-curated-m03-perspective-depth-compact.webp",436,560]},"normal":{"wide":["collage-curated-m03-perspective-normal-wide.webp",1746,542],"compact":["collage-curated-m03-perspective-normal-compact.webp",436,560]}},"panorama":{"rgb":{"wide":["collage-curated-m03-panorama-rgb-wide.webp",1810,504],"compact":["collage-curated-m03-panorama-rgb-compact.webp",452,520]},"depth":{"wide":["collage-curated-m03-panorama-depth-wide.webp",1810,504],"compact":["collage-curated-m03-panorama-depth-compact.webp",452,520]},"normal":{"wide":["collage-curated-m03-panorama-normal-wide.webp",1810,504],"compact":["collage-curated-m03-panorama-normal-compact.webp",452,520]}}},"color":"#7A5BB5","paletteIndex":3,"children":[{"name":"open office","count":487,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m03-s00-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m03-s00-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m03-s00-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m03-s00-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m03-s00-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m03-s00-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m03-s00-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m03-s00-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m03-s00-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m03-s00-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m03-s00-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m03-s00-panorama-normal-compact.webp",452,460]}}}},{"name":"meeting room","count":89,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m03-s01-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m03-s01-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m03-s01-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m03-s01-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m03-s01-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m03-s01-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m03-s01-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m03-s01-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m03-s01-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m03-s01-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m03-s01-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m03-s01-panorama-normal-compact.webp",452,460]}}}},{"name":"reception","count":16,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m03-s02-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m03-s02-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m03-s02-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m03-s02-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m03-s02-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m03-s02-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m03-s02-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m03-s02-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m03-s02-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m03-s02-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m03-s02-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m03-s02-panorama-normal-compact.webp",452,460]}}}},{"name":"private office","count":8,"exampleCount":5,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m03-s03-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m03-s03-perspective-rgb-compact.webp",436,374]},"depth":{"wide":["collage-curated-m03-s03-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m03-s03-perspective-depth-compact.webp",436,374]},"normal":{"wide":["collage-curated-m03-s03-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m03-s03-perspective-normal-compact.webp",436,374]}},"panorama":{"rgb":{"wide":["collage-curated-m03-s03-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m03-s03-panorama-rgb-compact.webp",452,344]},"depth":{"wide":["collage-curated-m03-s03-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m03-s03-panorama-depth-compact.webp",452,344]},"normal":{"wide":["collage-curated-m03-s03-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m03-s03-panorama-normal-compact.webp",452,344]}}}},{"name":"office common area","count":1,"exampleCount":1,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m03-s04-perspective-rgb-wide.webp",432,243],"compact":["collage-curated-m03-s04-perspective-rgb-compact.webp",216,122]},"depth":{"wide":["collage-curated-m03-s04-perspective-depth-wide.webp",432,243],"compact":["collage-curated-m03-s04-perspective-depth-compact.webp",216,122]},"normal":{"wide":["collage-curated-m03-s04-perspective-normal-wide.webp",432,243],"compact":["collage-curated-m03-s04-perspective-normal-compact.webp",216,122]}},"panorama":{"rgb":{"wide":["collage-curated-m03-s04-panorama-rgb-wide.webp",448,224],"compact":["collage-curated-m03-s04-panorama-rgb-compact.webp",224,112]},"depth":{"wide":["collage-curated-m03-s04-panorama-depth-wide.webp",448,224],"compact":["collage-curated-m03-s04-panorama-depth-compact.webp",224,112]},"normal":{"wide":["collage-curated-m03-s04-panorama-normal-wide.webp",448,224],"compact":["collage-curated-m03-s04-panorama-normal-compact.webp",224,112]}}}}]},{"name":"Food & drink","count":553,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m04-perspective-rgb-wide.webp",1746,542],"compact":["collage-curated-m04-perspective-rgb-compact.webp",436,560]},"depth":{"wide":["collage-curated-m04-perspective-depth-wide.webp",1746,542],"compact":["collage-curated-m04-perspective-depth-compact.webp",436,560]},"normal":{"wide":["collage-curated-m04-perspective-normal-wide.webp",1746,542],"compact":["collage-curated-m04-perspective-normal-compact.webp",436,560]}},"panorama":{"rgb":{"wide":["collage-curated-m04-panorama-rgb-wide.webp",1810,504],"compact":["collage-curated-m04-panorama-rgb-compact.webp",452,520]},"depth":{"wide":["collage-curated-m04-panorama-depth-wide.webp",1810,504],"compact":["collage-curated-m04-panorama-depth-compact.webp",452,520]},"normal":{"wide":["collage-curated-m04-panorama-normal-wide.webp",1810,504],"compact":["collage-curated-m04-panorama-normal-compact.webp",452,520]}}},"color":"#C2464A","paletteIndex":4,"children":[{"name":"restaurant","count":380,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m04-s00-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m04-s00-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m04-s00-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m04-s00-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m04-s00-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m04-s00-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m04-s00-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m04-s00-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m04-s00-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m04-s00-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m04-s00-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m04-s00-panorama-normal-compact.webp",452,460]}}}},{"name":"cafe","count":111,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m04-s01-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m04-s01-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m04-s01-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m04-s01-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m04-s01-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m04-s01-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m04-s01-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m04-s01-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m04-s01-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m04-s01-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m04-s01-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m04-s01-panorama-normal-compact.webp",452,460]}}}},{"name":"bakery / dessert","count":36,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m04-s02-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m04-s02-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m04-s02-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m04-s02-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m04-s02-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m04-s02-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m04-s02-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m04-s02-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m04-s02-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m04-s02-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m04-s02-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m04-s02-panorama-normal-compact.webp",452,460]}}}},{"name":"bar","count":18,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m04-s03-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m04-s03-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m04-s03-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m04-s03-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m04-s03-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m04-s03-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m04-s03-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m04-s03-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m04-s03-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m04-s03-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m04-s03-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m04-s03-panorama-normal-compact.webp",452,460]}}}},{"name":"fast food","count":8,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m04-s04-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m04-s04-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m04-s04-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m04-s04-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m04-s04-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m04-s04-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m04-s04-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m04-s04-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m04-s04-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m04-s04-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m04-s04-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m04-s04-panorama-normal-compact.webp",452,460]}}}}]},{"name":"Retail","count":392,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m06-perspective-rgb-wide.webp",1746,542],"compact":["collage-curated-m06-perspective-rgb-compact.webp",436,560]},"depth":{"wide":["collage-curated-m06-perspective-depth-wide.webp",1746,542],"compact":["collage-curated-m06-perspective-depth-compact.webp",436,560]},"normal":{"wide":["collage-curated-m06-perspective-normal-wide.webp",1746,542],"compact":["collage-curated-m06-perspective-normal-compact.webp",436,560]}},"panorama":{"rgb":{"wide":["collage-curated-m06-panorama-rgb-wide.webp",1810,504],"compact":["collage-curated-m06-panorama-rgb-compact.webp",452,520]},"depth":{"wide":["collage-curated-m06-panorama-depth-wide.webp",1810,504],"compact":["collage-curated-m06-panorama-depth-compact.webp",452,520]},"normal":{"wide":["collage-curated-m06-panorama-normal-wide.webp",1810,504],"compact":["collage-curated-m06-panorama-normal-compact.webp",452,520]}}},"color":"#D17FB0","paletteIndex":6,"children":[{"name":"bookstore","count":109,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m06-s00-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m06-s00-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m06-s00-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m06-s00-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m06-s00-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m06-s00-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m06-s00-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m06-s00-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m06-s00-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m06-s00-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m06-s00-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m06-s00-panorama-normal-compact.webp",452,460]}}}},{"name":"jewelry store","count":97,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m06-s01-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m06-s01-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m06-s01-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m06-s01-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m06-s01-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m06-s01-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m06-s01-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m06-s01-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m06-s01-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m06-s01-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m06-s01-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m06-s01-panorama-normal-compact.webp",452,460]}}}},{"name":"supermarket","count":64,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m06-s02-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m06-s02-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m06-s02-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m06-s02-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m06-s02-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m06-s02-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m06-s02-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m06-s02-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m06-s02-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m06-s02-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m06-s02-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m06-s02-panorama-normal-compact.webp",452,460]}}}},{"name":"clothing store","count":44,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m06-s03-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m06-s03-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m06-s03-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m06-s03-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m06-s03-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m06-s03-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m06-s03-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m06-s03-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m06-s03-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m06-s03-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m06-s03-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m06-s03-panorama-normal-compact.webp",452,460]}}}},{"name":"shopping mall","count":29,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m06-s04-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m06-s04-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m06-s04-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m06-s04-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m06-s04-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m06-s04-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m06-s04-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m06-s04-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m06-s04-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m06-s04-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m06-s04-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m06-s04-panorama-normal-compact.webp",452,460]}}}},{"name":"cosmetics store","count":21,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m06-s05-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m06-s05-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m06-s05-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m06-s05-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m06-s05-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m06-s05-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m06-s05-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m06-s05-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m06-s05-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m06-s05-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m06-s05-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m06-s05-panorama-normal-compact.webp",452,460]}}}},{"name":"electronics store","count":8,"exampleCount":6,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m06-s06-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m06-s06-perspective-rgb-compact.webp",436,374]},"depth":{"wide":["collage-curated-m06-s06-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m06-s06-perspective-depth-compact.webp",436,374]},"normal":{"wide":["collage-curated-m06-s06-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m06-s06-perspective-normal-compact.webp",436,374]}},"panorama":{"rgb":{"wide":["collage-curated-m06-s06-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m06-s06-panorama-rgb-compact.webp",452,344]},"depth":{"wide":["collage-curated-m06-s06-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m06-s06-panorama-depth-compact.webp",452,344]},"normal":{"wide":["collage-curated-m06-s06-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m06-s06-panorama-normal-compact.webp",452,344]}}}},{"name":"furniture store","count":8,"exampleCount":7,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m06-s07-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m06-s07-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m06-s07-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m06-s07-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m06-s07-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m06-s07-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m06-s07-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m06-s07-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m06-s07-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m06-s07-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m06-s07-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m06-s07-panorama-normal-compact.webp",452,460]}}}},{"name":"shoe store","count":5,"exampleCount":5,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m06-s08-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m06-s08-perspective-rgb-compact.webp",436,374]},"depth":{"wide":["collage-curated-m06-s08-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m06-s08-perspective-depth-compact.webp",436,374]},"normal":{"wide":["collage-curated-m06-s08-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m06-s08-perspective-normal-compact.webp",436,374]}},"panorama":{"rgb":{"wide":["collage-curated-m06-s08-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m06-s08-panorama-rgb-compact.webp",452,344]},"depth":{"wide":["collage-curated-m06-s08-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m06-s08-panorama-depth-compact.webp",452,344]},"normal":{"wide":["collage-curated-m06-s08-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m06-s08-panorama-normal-compact.webp",452,344]}}}},{"name":"florist","count":4,"exampleCount":4,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m06-s09-perspective-rgb-wide.webp",1746,243],"compact":["collage-curated-m06-s09-perspective-rgb-compact.webp",436,248]},"depth":{"wide":["collage-curated-m06-s09-perspective-depth-wide.webp",1746,243],"compact":["collage-curated-m06-s09-perspective-depth-compact.webp",436,248]},"normal":{"wide":["collage-curated-m06-s09-perspective-normal-wide.webp",1746,243],"compact":["collage-curated-m06-s09-perspective-normal-compact.webp",436,248]}},"panorama":{"rgb":{"wide":["collage-curated-m06-s09-panorama-rgb-wide.webp",1810,224],"compact":["collage-curated-m06-s09-panorama-rgb-compact.webp",452,228]},"depth":{"wide":["collage-curated-m06-s09-panorama-depth-wide.webp",1810,224],"compact":["collage-curated-m06-s09-panorama-depth-compact.webp",452,228]},"normal":{"wide":["collage-curated-m06-s09-panorama-normal-wide.webp",1810,224],"compact":["collage-curated-m06-s09-panorama-normal-compact.webp",452,228]}}}},{"name":"other retail","count":3,"exampleCount":2,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m06-s10-perspective-rgb-wide.webp",870,243],"compact":["collage-curated-m06-s10-perspective-rgb-compact.webp",436,122]},"depth":{"wide":["collage-curated-m06-s10-perspective-depth-wide.webp",870,243],"compact":["collage-curated-m06-s10-perspective-depth-compact.webp",436,122]},"normal":{"wide":["collage-curated-m06-s10-perspective-normal-wide.webp",870,243],"compact":["collage-curated-m06-s10-perspective-normal-compact.webp",436,122]}},"panorama":{"rgb":{"wide":["collage-curated-m06-s10-panorama-rgb-wide.webp",902,224],"compact":["collage-curated-m06-s10-panorama-rgb-compact.webp",452,112]},"depth":{"wide":["collage-curated-m06-s10-panorama-depth-wide.webp",902,224],"compact":["collage-curated-m06-s10-panorama-depth-compact.webp",452,112]},"normal":{"wide":["collage-curated-m06-s10-panorama-normal-wide.webp",902,224],"compact":["collage-curated-m06-s10-panorama-normal-compact.webp",452,112]}}}}]},{"name":"Education","count":233,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m07-perspective-rgb-wide.webp",1746,542],"compact":["collage-curated-m07-perspective-rgb-compact.webp",436,560]},"depth":{"wide":["collage-curated-m07-perspective-depth-wide.webp",1746,542],"compact":["collage-curated-m07-perspective-depth-compact.webp",436,560]},"normal":{"wide":["collage-curated-m07-perspective-normal-wide.webp",1746,542],"compact":["collage-curated-m07-perspective-normal-compact.webp",436,560]}},"panorama":{"rgb":{"wide":["collage-curated-m07-panorama-rgb-wide.webp",1810,504],"compact":["collage-curated-m07-panorama-rgb-compact.webp",452,520]},"depth":{"wide":["collage-curated-m07-panorama-depth-wide.webp",1810,504],"compact":["collage-curated-m07-panorama-depth-compact.webp",452,520]},"normal":{"wide":["collage-curated-m07-panorama-normal-wide.webp",1810,504],"compact":["collage-curated-m07-panorama-normal-compact.webp",452,520]}}},"color":"#5B8E9F","paletteIndex":7,"children":[{"name":"library","count":135,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m07-s00-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m07-s00-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m07-s00-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m07-s00-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m07-s00-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m07-s00-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m07-s00-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m07-s00-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m07-s00-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m07-s00-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m07-s00-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m07-s00-panorama-normal-compact.webp",452,460]}}}},{"name":"classroom","count":64,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m07-s01-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m07-s01-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m07-s01-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m07-s01-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m07-s01-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m07-s01-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m07-s01-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m07-s01-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m07-s01-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m07-s01-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m07-s01-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m07-s01-panorama-normal-compact.webp",452,460]}}}},{"name":"kindergarten","count":17,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m07-s02-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m07-s02-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m07-s02-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m07-s02-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m07-s02-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m07-s02-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m07-s02-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m07-s02-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m07-s02-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m07-s02-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m07-s02-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m07-s02-panorama-normal-compact.webp",452,460]}}}},{"name":"laboratory","count":17,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m07-s03-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m07-s03-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m07-s03-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m07-s03-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m07-s03-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m07-s03-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m07-s03-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m07-s03-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m07-s03-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m07-s03-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m07-s03-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m07-s03-panorama-normal-compact.webp",452,460]}}}}]},{"name":"Sports & fitness","count":210,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m08-perspective-rgb-wide.webp",1746,542],"compact":["collage-curated-m08-perspective-rgb-compact.webp",436,560]},"depth":{"wide":["collage-curated-m08-perspective-depth-wide.webp",1746,542],"compact":["collage-curated-m08-perspective-depth-compact.webp",436,560]},"normal":{"wide":["collage-curated-m08-perspective-normal-wide.webp",1746,542],"compact":["collage-curated-m08-perspective-normal-compact.webp",436,560]}},"panorama":{"rgb":{"wide":["collage-curated-m08-panorama-rgb-wide.webp",1810,504],"compact":["collage-curated-m08-panorama-rgb-compact.webp",452,520]},"depth":{"wide":["collage-curated-m08-panorama-depth-wide.webp",1810,504],"compact":["collage-curated-m08-panorama-depth-compact.webp",452,520]},"normal":{"wide":["collage-curated-m08-panorama-normal-wide.webp",1810,504],"compact":["collage-curated-m08-panorama-normal-compact.webp",452,520]}}},"color":"#9C9A3A","paletteIndex":8,"children":[{"name":"gym","count":164,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m08-s00-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m08-s00-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m08-s00-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m08-s00-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m08-s00-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m08-s00-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m08-s00-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m08-s00-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m08-s00-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m08-s00-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m08-s00-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m08-s00-panorama-normal-compact.webp",452,460]}}}},{"name":"yoga / dance studio","count":25,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m08-s01-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m08-s01-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m08-s01-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m08-s01-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m08-s01-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m08-s01-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m08-s01-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m08-s01-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m08-s01-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m08-s01-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m08-s01-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m08-s01-panorama-normal-compact.webp",452,460]}}}},{"name":"indoor court","count":15,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m08-s02-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m08-s02-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m08-s02-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m08-s02-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m08-s02-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m08-s02-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m08-s02-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m08-s02-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m08-s02-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m08-s02-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m08-s02-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m08-s02-panorama-normal-compact.webp",452,460]}}}},{"name":"swimming hall","count":5,"exampleCount":4,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m08-s03-perspective-rgb-wide.webp",1746,243],"compact":["collage-curated-m08-s03-perspective-rgb-compact.webp",436,248]},"depth":{"wide":["collage-curated-m08-s03-perspective-depth-wide.webp",1746,243],"compact":["collage-curated-m08-s03-perspective-depth-compact.webp",436,248]},"normal":{"wide":["collage-curated-m08-s03-perspective-normal-wide.webp",1746,243],"compact":["collage-curated-m08-s03-perspective-normal-compact.webp",436,248]}},"panorama":{"rgb":{"wide":["collage-curated-m08-s03-panorama-rgb-wide.webp",1810,224],"compact":["collage-curated-m08-s03-panorama-rgb-compact.webp",452,228]},"depth":{"wide":["collage-curated-m08-s03-panorama-depth-wide.webp",1810,224],"compact":["collage-curated-m08-s03-panorama-depth-compact.webp",452,228]},"normal":{"wide":["collage-curated-m08-s03-panorama-normal-wide.webp",1810,224],"compact":["collage-curated-m08-s03-panorama-normal-compact.webp",452,228]}}}},{"name":"locker room","count":1,"exampleCount":1,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m08-s04-perspective-rgb-wide.webp",432,243],"compact":["collage-curated-m08-s04-perspective-rgb-compact.webp",216,122]},"depth":{"wide":["collage-curated-m08-s04-perspective-depth-wide.webp",432,243],"compact":["collage-curated-m08-s04-perspective-depth-compact.webp",216,122]},"normal":{"wide":["collage-curated-m08-s04-perspective-normal-wide.webp",432,243],"compact":["collage-curated-m08-s04-perspective-normal-compact.webp",216,122]}},"panorama":{"rgb":{"wide":["collage-curated-m08-s04-panorama-rgb-wide.webp",448,224],"compact":["collage-curated-m08-s04-panorama-rgb-compact.webp",224,112]},"depth":{"wide":["collage-curated-m08-s04-panorama-depth-wide.webp",448,224],"compact":["collage-curated-m08-s04-panorama-depth-compact.webp",224,112]},"normal":{"wide":["collage-curated-m08-s04-panorama-normal-wide.webp",448,224],"compact":["collage-curated-m08-s04-panorama-normal-compact.webp",224,112]}}}}]},{"name":"Transport","count":88,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m10-perspective-rgb-wide.webp",1746,542],"compact":["collage-curated-m10-perspective-rgb-compact.webp",436,560]},"depth":{"wide":["collage-curated-m10-perspective-depth-wide.webp",1746,542],"compact":["collage-curated-m10-perspective-depth-compact.webp",436,560]},"normal":{"wide":["collage-curated-m10-perspective-normal-wide.webp",1746,542],"compact":["collage-curated-m10-perspective-normal-compact.webp",436,560]}},"panorama":{"rgb":{"wide":["collage-curated-m10-panorama-rgb-wide.webp",1810,504],"compact":["collage-curated-m10-panorama-rgb-compact.webp",452,520]},"depth":{"wide":["collage-curated-m10-panorama-depth-wide.webp",1810,504],"compact":["collage-curated-m10-panorama-depth-compact.webp",452,520]},"normal":{"wide":["collage-curated-m10-panorama-normal-wide.webp",1810,504],"compact":["collage-curated-m10-panorama-normal-compact.webp",452,520]}}},"color":"#6E7FB8","paletteIndex":10,"children":[{"name":"parking / garage","count":64,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m10-s00-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m10-s00-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m10-s00-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m10-s00-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m10-s00-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m10-s00-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m10-s00-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m10-s00-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m10-s00-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m10-s00-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m10-s00-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m10-s00-panorama-normal-compact.webp",452,460]}}}},{"name":"airport","count":11,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m10-s01-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m10-s01-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m10-s01-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m10-s01-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m10-s01-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m10-s01-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m10-s01-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m10-s01-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m10-s01-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m10-s01-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m10-s01-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m10-s01-panorama-normal-compact.webp",452,460]}}}},{"name":"station waiting area","count":10,"exampleCount":7,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m10-s02-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m10-s02-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m10-s02-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m10-s02-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m10-s02-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m10-s02-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m10-s02-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m10-s02-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m10-s02-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m10-s02-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m10-s02-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m10-s02-panorama-normal-compact.webp",452,460]}}}},{"name":"subway station","count":3,"exampleCount":1,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m10-s03-perspective-rgb-wide.webp",432,243],"compact":["collage-curated-m10-s03-perspective-rgb-compact.webp",216,122]},"depth":{"wide":["collage-curated-m10-s03-perspective-depth-wide.webp",432,243],"compact":["collage-curated-m10-s03-perspective-depth-compact.webp",216,122]},"normal":{"wide":["collage-curated-m10-s03-perspective-normal-wide.webp",432,243],"compact":["collage-curated-m10-s03-perspective-normal-compact.webp",216,122]}},"panorama":{"rgb":{"wide":["collage-curated-m10-s03-panorama-rgb-wide.webp",448,224],"compact":["collage-curated-m10-s03-panorama-rgb-compact.webp",224,112]},"depth":{"wide":["collage-curated-m10-s03-panorama-depth-wide.webp",448,224],"compact":["collage-curated-m10-s03-panorama-depth-compact.webp",224,112]},"normal":{"wide":["collage-curated-m10-s03-panorama-normal-wide.webp",448,224],"compact":["collage-curated-m10-s03-panorama-normal-compact.webp",224,112]}}}}]},{"name":"Public service","count":44,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m11-perspective-rgb-wide.webp",1746,542],"compact":["collage-curated-m11-perspective-rgb-compact.webp",436,560]},"depth":{"wide":["collage-curated-m11-perspective-depth-wide.webp",1746,542],"compact":["collage-curated-m11-perspective-depth-compact.webp",436,560]},"normal":{"wide":["collage-curated-m11-perspective-normal-wide.webp",1746,542],"compact":["collage-curated-m11-perspective-normal-compact.webp",436,560]}},"panorama":{"rgb":{"wide":["collage-curated-m11-panorama-rgb-wide.webp",1810,504],"compact":["collage-curated-m11-panorama-rgb-compact.webp",452,520]},"depth":{"wide":["collage-curated-m11-panorama-depth-wide.webp",1810,504],"compact":["collage-curated-m11-panorama-depth-compact.webp",452,520]},"normal":{"wide":["collage-curated-m11-panorama-normal-wide.webp",1810,504],"compact":["collage-curated-m11-panorama-normal-compact.webp",452,520]}}},"color":"#B5652E","paletteIndex":11,"children":[{"name":"public restroom","count":28,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m11-s00-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m11-s00-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m11-s00-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m11-s00-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m11-s00-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m11-s00-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m11-s00-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m11-s00-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m11-s00-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m11-s00-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m11-s00-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m11-s00-panorama-normal-compact.webp",452,460]}}}},{"name":"religious space","count":11,"exampleCount":7,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m11-s01-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m11-s01-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m11-s01-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m11-s01-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m11-s01-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m11-s01-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m11-s01-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m11-s01-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m11-s01-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m11-s01-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m11-s01-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m11-s01-panorama-normal-compact.webp",452,460]}}}},{"name":"public hall","count":4,"exampleCount":4,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m11-s02-perspective-rgb-wide.webp",1746,243],"compact":["collage-curated-m11-s02-perspective-rgb-compact.webp",436,248]},"depth":{"wide":["collage-curated-m11-s02-perspective-depth-wide.webp",1746,243],"compact":["collage-curated-m11-s02-perspective-depth-compact.webp",436,248]},"normal":{"wide":["collage-curated-m11-s02-perspective-normal-wide.webp",1746,243],"compact":["collage-curated-m11-s02-perspective-normal-compact.webp",436,248]}},"panorama":{"rgb":{"wide":["collage-curated-m11-s02-panorama-rgb-wide.webp",1810,224],"compact":["collage-curated-m11-s02-panorama-rgb-compact.webp",452,228]},"depth":{"wide":["collage-curated-m11-s02-panorama-depth-wide.webp",1810,224],"compact":["collage-curated-m11-s02-panorama-depth-compact.webp",452,228]},"normal":{"wide":["collage-curated-m11-s02-panorama-normal-wide.webp",1810,224],"compact":["collage-curated-m11-s02-panorama-normal-compact.webp",452,228]}}}},{"name":"service center","count":1,"exampleCount":1,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m11-s03-perspective-rgb-wide.webp",432,243],"compact":["collage-curated-m11-s03-perspective-rgb-compact.webp",216,122]},"depth":{"wide":["collage-curated-m11-s03-perspective-depth-wide.webp",432,243],"compact":["collage-curated-m11-s03-perspective-depth-compact.webp",216,122]},"normal":{"wide":["collage-curated-m11-s03-perspective-normal-wide.webp",432,243],"compact":["collage-curated-m11-s03-perspective-normal-compact.webp",216,122]}},"panorama":{"rgb":{"wide":["collage-curated-m11-s03-panorama-rgb-wide.webp",448,224],"compact":["collage-curated-m11-s03-panorama-rgb-compact.webp",224,112]},"depth":{"wide":["collage-curated-m11-s03-panorama-depth-wide.webp",448,224],"compact":["collage-curated-m11-s03-panorama-depth-compact.webp",224,112]},"normal":{"wide":["collage-curated-m11-s03-panorama-normal-wide.webp",448,224],"compact":["collage-curated-m11-s03-panorama-normal-compact.webp",224,112]}}}}]},{"name":"Personal service","count":16,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m12-perspective-rgb-wide.webp",1746,542],"compact":["collage-curated-m12-perspective-rgb-compact.webp",436,560]},"depth":{"wide":["collage-curated-m12-perspective-depth-wide.webp",1746,542],"compact":["collage-curated-m12-perspective-depth-compact.webp",436,560]},"normal":{"wide":["collage-curated-m12-perspective-normal-wide.webp",1746,542],"compact":["collage-curated-m12-perspective-normal-compact.webp",436,560]}},"panorama":{"rgb":{"wide":["collage-curated-m12-panorama-rgb-wide.webp",1810,504],"compact":["collage-curated-m12-panorama-rgb-compact.webp",452,520]},"depth":{"wide":["collage-curated-m12-panorama-depth-wide.webp",1810,504],"compact":["collage-curated-m12-panorama-depth-compact.webp",452,520]},"normal":{"wide":["collage-curated-m12-panorama-normal-wide.webp",1810,504],"compact":["collage-curated-m12-panorama-normal-compact.webp",452,520]}}},"color":"#5E5E5E","paletteIndex":12,"children":[{"name":"hair salon","count":12,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m12-s00-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m12-s00-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m12-s00-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m12-s00-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m12-s00-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m12-s00-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m12-s00-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m12-s00-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m12-s00-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m12-s00-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m12-s00-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m12-s00-panorama-normal-compact.webp",452,460]}}}},{"name":"beauty / spa","count":3,"exampleCount":3,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m12-s01-perspective-rgb-wide.webp",1308,243],"compact":["collage-curated-m12-s01-perspective-rgb-compact.webp",436,248]},"depth":{"wide":["collage-curated-m12-s01-perspective-depth-wide.webp",1308,243],"compact":["collage-curated-m12-s01-perspective-depth-compact.webp",436,248]},"normal":{"wide":["collage-curated-m12-s01-perspective-normal-wide.webp",1308,243],"compact":["collage-curated-m12-s01-perspective-normal-compact.webp",436,248]}},"panorama":{"rgb":{"wide":["collage-curated-m12-s01-panorama-rgb-wide.webp",1356,224],"compact":["collage-curated-m12-s01-panorama-rgb-compact.webp",452,228]},"depth":{"wide":["collage-curated-m12-s01-panorama-depth-wide.webp",1356,224],"compact":["collage-curated-m12-s01-panorama-depth-compact.webp",452,228]},"normal":{"wide":["collage-curated-m12-s01-panorama-normal-wide.webp",1356,224],"compact":["collage-curated-m12-s01-panorama-normal-compact.webp",452,228]}}}},{"name":"laundromat","count":1,"exampleCount":1,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m12-s02-perspective-rgb-wide.webp",432,243],"compact":["collage-curated-m12-s02-perspective-rgb-compact.webp",216,122]},"depth":{"wide":["collage-curated-m12-s02-perspective-depth-wide.webp",432,243],"compact":["collage-curated-m12-s02-perspective-depth-compact.webp",216,122]},"normal":{"wide":["collage-curated-m12-s02-perspective-normal-wide.webp",432,243],"compact":["collage-curated-m12-s02-perspective-normal-compact.webp",216,122]}},"panorama":{"rgb":{"wide":["collage-curated-m12-s02-panorama-rgb-wide.webp",448,224],"compact":["collage-curated-m12-s02-panorama-rgb-compact.webp",224,112]},"depth":{"wide":["collage-curated-m12-s02-panorama-depth-wide.webp",448,224],"compact":["collage-curated-m12-s02-panorama-depth-compact.webp",224,112]},"normal":{"wide":["collage-curated-m12-s02-panorama-normal-wide.webp",448,224],"compact":["collage-curated-m12-s02-panorama-normal-compact.webp",224,112]}}}}]},{"name":"Healthcare","count":12,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m13-perspective-rgb-wide.webp",1746,542],"compact":["collage-curated-m13-perspective-rgb-compact.webp",436,560]},"depth":{"wide":["collage-curated-m13-perspective-depth-wide.webp",1746,542],"compact":["collage-curated-m13-perspective-depth-compact.webp",436,560]},"normal":{"wide":["collage-curated-m13-perspective-normal-wide.webp",1746,542],"compact":["collage-curated-m13-perspective-normal-compact.webp",436,560]}},"panorama":{"rgb":{"wide":["collage-curated-m13-panorama-rgb-wide.webp",1810,504],"compact":["collage-curated-m13-panorama-rgb-compact.webp",452,520]},"depth":{"wide":["collage-curated-m13-panorama-depth-wide.webp",1810,504],"compact":["collage-curated-m13-panorama-depth-compact.webp",452,520]},"normal":{"wide":["collage-curated-m13-panorama-normal-wide.webp",1810,504],"compact":["collage-curated-m13-panorama-normal-compact.webp",452,520]}}},"color":"#A4486F","paletteIndex":13,"children":[{"name":"dental clinic","count":5,"exampleCount":3,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m13-s00-perspective-rgb-wide.webp",1308,243],"compact":["collage-curated-m13-s00-perspective-rgb-compact.webp",436,248]},"depth":{"wide":["collage-curated-m13-s00-perspective-depth-wide.webp",1308,243],"compact":["collage-curated-m13-s00-perspective-depth-compact.webp",436,248]},"normal":{"wide":["collage-curated-m13-s00-perspective-normal-wide.webp",1308,243],"compact":["collage-curated-m13-s00-perspective-normal-compact.webp",436,248]}},"panorama":{"rgb":{"wide":["collage-curated-m13-s00-panorama-rgb-wide.webp",1356,224],"compact":["collage-curated-m13-s00-panorama-rgb-compact.webp",452,228]},"depth":{"wide":["collage-curated-m13-s00-panorama-depth-wide.webp",1356,224],"compact":["collage-curated-m13-s00-panorama-depth-compact.webp",452,228]},"normal":{"wide":["collage-curated-m13-s00-panorama-normal-wide.webp",1356,224],"compact":["collage-curated-m13-s00-panorama-normal-compact.webp",452,228]}}}},{"name":"hospital ward","count":5,"exampleCount":3,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m13-s01-perspective-rgb-wide.webp",1308,243],"compact":["collage-curated-m13-s01-perspective-rgb-compact.webp",436,248]},"depth":{"wide":["collage-curated-m13-s01-perspective-depth-wide.webp",1308,243],"compact":["collage-curated-m13-s01-perspective-depth-compact.webp",436,248]},"normal":{"wide":["collage-curated-m13-s01-perspective-normal-wide.webp",1308,243],"compact":["collage-curated-m13-s01-perspective-normal-compact.webp",436,248]}},"panorama":{"rgb":{"wide":["collage-curated-m13-s01-panorama-rgb-wide.webp",1356,224],"compact":["collage-curated-m13-s01-panorama-rgb-compact.webp",452,228]},"depth":{"wide":["collage-curated-m13-s01-panorama-depth-wide.webp",1356,224],"compact":["collage-curated-m13-s01-panorama-depth-compact.webp",452,228]},"normal":{"wide":["collage-curated-m13-s01-panorama-normal-wide.webp",1356,224],"compact":["collage-curated-m13-s01-panorama-normal-compact.webp",452,228]}}}},{"name":"hospital common area","count":1,"exampleCount":1,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m13-s02-perspective-rgb-wide.webp",432,243],"compact":["collage-curated-m13-s02-perspective-rgb-compact.webp",216,122]},"depth":{"wide":["collage-curated-m13-s02-perspective-depth-wide.webp",432,243],"compact":["collage-curated-m13-s02-perspective-depth-compact.webp",216,122]},"normal":{"wide":["collage-curated-m13-s02-perspective-normal-wide.webp",432,243],"compact":["collage-curated-m13-s02-perspective-normal-compact.webp",216,122]}},"panorama":{"rgb":{"wide":["collage-curated-m13-s02-panorama-rgb-wide.webp",448,224],"compact":["collage-curated-m13-s02-panorama-rgb-compact.webp",224,112]},"depth":{"wide":["collage-curated-m13-s02-panorama-depth-wide.webp",448,224],"compact":["collage-curated-m13-s02-panorama-depth-compact.webp",224,112]},"normal":{"wide":["collage-curated-m13-s02-panorama-normal-wide.webp",448,224],"compact":["collage-curated-m13-s02-panorama-normal-compact.webp",224,112]}}}},{"name":"consulting room","count":1,"exampleCount":1,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m13-s03-perspective-rgb-wide.webp",432,243],"compact":["collage-curated-m13-s03-perspective-rgb-compact.webp",216,122]},"depth":{"wide":["collage-curated-m13-s03-perspective-depth-wide.webp",432,243],"compact":["collage-curated-m13-s03-perspective-depth-compact.webp",216,122]},"normal":{"wide":["collage-curated-m13-s03-perspective-normal-wide.webp",432,243],"compact":["collage-curated-m13-s03-perspective-normal-compact.webp",216,122]}},"panorama":{"rgb":{"wide":["collage-curated-m13-s03-panorama-rgb-wide.webp",448,224],"compact":["collage-curated-m13-s03-panorama-rgb-compact.webp",224,112]},"depth":{"wide":["collage-curated-m13-s03-panorama-depth-wide.webp",448,224],"compact":["collage-curated-m13-s03-panorama-depth-compact.webp",224,112]},"normal":{"wide":["collage-curated-m13-s03-panorama-normal-wide.webp",448,224],"compact":["collage-curated-m13-s03-panorama-normal-compact.webp",224,112]}}}}]},{"name":"Industrial","count":11,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m14-perspective-rgb-wide.webp",1746,542],"compact":["collage-curated-m14-perspective-rgb-compact.webp",436,560]},"depth":{"wide":["collage-curated-m14-perspective-depth-wide.webp",1746,542],"compact":["collage-curated-m14-perspective-depth-compact.webp",436,560]},"normal":{"wide":["collage-curated-m14-perspective-normal-wide.webp",1746,542],"compact":["collage-curated-m14-perspective-normal-compact.webp",436,560]}},"panorama":{"rgb":{"wide":["collage-curated-m14-panorama-rgb-wide.webp",1810,504],"compact":["collage-curated-m14-panorama-rgb-compact.webp",452,520]},"depth":{"wide":["collage-curated-m14-panorama-depth-wide.webp",1810,504],"compact":["collage-curated-m14-panorama-depth-compact.webp",452,520]},"normal":{"wide":["collage-curated-m14-panorama-normal-wide.webp",1810,504],"compact":["collage-curated-m14-panorama-normal-compact.webp",452,520]}}},"color":"#3E8E8E","paletteIndex":14,"children":[{"name":"factory / workshop","count":9,"exampleCount":8,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m14-s00-perspective-rgb-wide.webp",1746,492],"compact":["collage-curated-m14-s00-perspective-rgb-compact.webp",436,500]},"depth":{"wide":["collage-curated-m14-s00-perspective-depth-wide.webp",1746,492],"compact":["collage-curated-m14-s00-perspective-depth-compact.webp",436,500]},"normal":{"wide":["collage-curated-m14-s00-perspective-normal-wide.webp",1746,492],"compact":["collage-curated-m14-s00-perspective-normal-compact.webp",436,500]}},"panorama":{"rgb":{"wide":["collage-curated-m14-s00-panorama-rgb-wide.webp",1810,454],"compact":["collage-curated-m14-s00-panorama-rgb-compact.webp",452,460]},"depth":{"wide":["collage-curated-m14-s00-panorama-depth-wide.webp",1810,454],"compact":["collage-curated-m14-s00-panorama-depth-compact.webp",452,460]},"normal":{"wide":["collage-curated-m14-s00-panorama-normal-wide.webp",1810,454],"compact":["collage-curated-m14-s00-panorama-normal-compact.webp",452,460]}}}},{"name":"maker space","count":1,"exampleCount":0,"pictures":{}},{"name":"warehouse","count":1,"exampleCount":1,"pictures":{"perspective":{"rgb":{"wide":["collage-curated-m14-s02-perspective-rgb-wide.webp",432,243],"compact":["collage-curated-m14-s02-perspective-rgb-compact.webp",216,122]},"depth":{"wide":["collage-curated-m14-s02-perspective-depth-wide.webp",432,243],"compact":["collage-curated-m14-s02-perspective-depth-compact.webp",216,122]},"normal":{"wide":["collage-curated-m14-s02-perspective-normal-wide.webp",432,243],"compact":["collage-curated-m14-s02-perspective-normal-compact.webp",216,122]}},"panorama":{"rgb":{"wide":["collage-curated-m14-s02-panorama-rgb-wide.webp",448,224],"compact":["collage-curated-m14-s02-panorama-rgb-compact.webp",224,112]},"depth":{"wide":["collage-curated-m14-s02-panorama-depth-wide.webp",448,224],"compact":["collage-curated-m14-s02-panorama-depth-compact.webp",224,112]},"normal":{"wide":["collage-curated-m14-s02-panorama-normal-wide.webp",448,224],"compact":["collage-curated-m14-s02-panorama-normal-compact.webp",224,112]}}}}]}];
+</script>
+<script>
+'use strict';
+
+const assets = file => 'asset/' + file;
+const gallery = document.getElementById('scene-gallery');
+const status = document.getElementById('gallery-status');
+const depthKey = document.getElementById('gallery-depth');
+const layerNames = {rgb: 'RGB', depth: 'Depth', normal: 'Normals'};
+const projectionButtons = document.querySelectorAll('[data-mode]');
+const modalityButtons = document.querySelectorAll('[data-layer]');
+
+let projection = 'perspective';
+let layer = 'rgb';
+let category;
+let displayed;
+
+function updateGallery() {
+  projectionButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.mode === projection)));
+  modalityButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.layer === layer)));
+  depthKey.hidden = layer !== 'depth';
+  if (!category) return;
+  if (!category.exampleCount) {
+    displayed = null;
+    gallery.replaceChildren();
+    status.textContent = 'No scene preview passes the image and depth checks for this category.';
+    status.hidden = false;
+    depthKey.hidden = true;
+    return;
+  }
+  const selected = category.pictures[projection][layer];
+  if (selected === displayed) return;
+  displayed = selected;
+  status.hidden = true;
+
+  const picture = document.createElement('picture');
+  const mobile = document.createElement('source');
+  const [compact, compactWidth, compactHeight] = selected.compact;
+  mobile.media = '(max-width: 650px)';
+  mobile.srcset = assets(compact);
+  mobile.setAttribute('width', compactWidth);
+  mobile.setAttribute('height', compactHeight);
+
+  const image = document.createElement('img');
+  const [wide, width, height] = selected.wide;
+  image.width = width;
+  image.height = height;
+  image.decoding = 'async';
+  image.loading = 'eager';
+  const examples = category.exampleCount === 1 ? 'scene' : 'scenes';
+  image.alt = layerNames[layer] + ' ' + projection + ' montage of ' + category.exampleCount + ' ' +
+    category.name + ' ' + examples;
+  image.addEventListener('error', () => {
+    if (!image.isConnected) return;
+    displayed = null;
+    status.textContent = 'This category image could not be loaded.';
+    status.hidden = false;
+  });
+
+  picture.append(mobile, image);
+  gallery.replaceChildren(picture);
+  image.src = assets(wide);
+}
+
+function setGalleryCategory(selected) {
+  category = selected;
+  updateGallery();
+}
+
+projectionButtons.forEach(button => button.addEventListener('click', () => {
+  projection = button.dataset.mode;
+  updateGallery();
+}));
+modalityButtons.forEach(button => button.addEventListener('click', () => {
+  layer = button.dataset.layer;
+  updateGallery();
+}));
+</script>
+<script>
+'use strict';
+
+(() => {
+  const categories = window.HABI_CATEGORIES;
+  const canvas = document.getElementById('distribution-chart');
+  const legend = document.getElementById('category-list');
+  const options = document.getElementById('subcategory');
+  const context = canvas.getContext('2d');
+  const palette = getComputedStyle(document.documentElement);
+  const swatches = [
+    palette.getPropertyValue('--primary').trim(), palette.getPropertyValue('--ink').trim(),
+    palette.getPropertyValue('--sage').trim(), palette.getPropertyValue('--sand').trim(),
+    '#ad6954', '#626687', '#4e887c', '#bf8a45', '#e89c88', '#8790a7', '#accfbe', '#d6af70',
+    '#9e4f42', '#a8adc0', '#627e69',
+  ];
+  const activeStroke = palette.getPropertyValue('--ink').trim();
+  const total = categories.reduce((sum, category) => sum + category.count, 0);
+  const majorRing = [.31, .61];
+  const minorRing = [.635, .96];
+  const fullCircle = Math.PI * 2;
+  const counts = new Intl.NumberFormat('en');
+  document.getElementById('distribution-count').textContent = counts.format(total);
+  let majorSelection = 0;
+  let minorSelection = -1;
+  let angle = 0;
+  const majorSlices = [];
+  const minorSlices = [];
+
+  function percentage(count) {
+    const share = count / total * 100;
+    return share < .05 ? '<0.1%' : share.toFixed(1) + '%';
+  }
+
+  function sliceColor(hex, index) {
+    const channels = hex.slice(1).match(/../g).map(part => Number.parseInt(part, 16));
+    const tint = .17 + (index % 3) * .11;
+    return 'rgb(' + channels.map(channel => Math.round(channel + (255 - channel) * tint)).join(',') + ')';
+  }
+
+  function makeControls() {
+    categories.forEach((category, major) => {
+      const color = swatches[category.paletteIndex ?? major] ?? category.color;
+      const start = angle;
+      category.children.forEach((child, minor) => {
+        const end = angle + child.count / total * fullCircle;
+        minorSlices.push({start: angle, end, color: sliceColor(color, minor), major, minor});
+        angle = end;
+      });
+      majorSlices.push({start, end: angle, color, major, minor: -1});
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'category-option';
+      button.style.setProperty('--category-color', color);
+      button.setAttribute('aria-label', category.name + ', ' + percentage(category.count) + ' of scenes');
+      const name = document.createElement('span');
+      name.textContent = category.name;
+      const count = document.createElement('span');
+      count.textContent = percentage(category.count);
+      button.append(name, count);
+      button.addEventListener('click', () => select(major));
+      legend.append(button);
+    });
+  }
+
+  function drawRing(slices, radius, center, [inner, outer]) {
+    for (const slice of slices) {
+      const active = slice.major === majorSelection && slice.minor === minorSelection;
+      const start = slice.start - Math.PI / 2;
+      const end = slice.end - Math.PI / 2;
+      context.beginPath();
+      context.arc(center, center, radius * outer, start, end);
+      context.arc(center, center, radius * inner, end, start, true);
+      context.closePath();
+      context.fillStyle = slice.color;
+      context.fill();
+      context.lineWidth = active ? 2.4 : .75;
+      context.strokeStyle = active ? activeStroke : '#ffffff';
+      context.stroke();
+    }
+  }
+
+  function draw() {
+    const size = Math.round(canvas.clientWidth * Math.min(window.devicePixelRatio || 1, 2));
+    if (!size) return;
+    canvas.width = size;
+    canvas.height = size;
+    const center = size / 2;
+    drawRing(majorSlices, center, center, majorRing);
+    drawRing(minorSlices, center, center, minorRing);
+  }
+
+  function select(major, minor = -1) {
+    const category = categories[major];
+    if (major !== majorSelection || !options.length) {
+      options.replaceChildren(new Option('All subcategories', '-1'));
+      category.children.forEach((child, index) => {
+        options.add(new Option(child.name + ' · ' + counts.format(child.count), index));
+      });
+    }
+    majorSelection = major;
+    minorSelection = minor;
+    options.value = minor;
+    [...legend.children].forEach((button, index) => {
+      button.setAttribute('aria-pressed', String(index === major));
+    });
+    const selected = minor < 0 ? category : category.children[minor];
+    const parent = document.getElementById('example-category');
+    parent.textContent = category.name;
+    parent.hidden = minor < 0;
+    document.getElementById('example-name').textContent = selected.name[0].toUpperCase() + selected.name.slice(1);
+    setGalleryCategory(selected);
+    draw();
+  }
+
+  function sliceAt(event) {
+    const bounds = canvas.getBoundingClientRect();
+    const x = 2 * (event.clientX - bounds.left) / bounds.width - 1;
+    const y = 2 * (event.clientY - bounds.top) / bounds.height - 1;
+    const radius = Math.hypot(x, y);
+    const heading = (Math.atan2(y, x) + Math.PI / 2 + fullCircle) % fullCircle;
+    if (radius >= majorRing[0] && radius <= majorRing[1]) {
+      return majorSlices.find(slice => heading >= slice.start && heading < slice.end);
+    }
+    if (radius >= minorRing[0] && radius <= minorRing[1]) {
+      return minorSlices.find(slice => heading >= slice.start && heading < slice.end);
+    }
+    return undefined;
+  }
+
+  canvas.addEventListener('pointermove', event => {
+    const slice = sliceAt(event);
+    canvas.style.cursor = slice ? 'pointer' : '';
+    if (!slice) {
+      canvas.title = '';
+      return;
+    }
+    const category = categories[slice.major];
+    const selected = slice.minor < 0 ? category : category.children[slice.minor];
+    canvas.title = selected.name + ' · ' + percentage(selected.count);
+  });
+  canvas.addEventListener('click', event => {
+    const slice = sliceAt(event);
+    if (slice) select(slice.major, slice.minor);
+  });
+  options.addEventListener('change', () => select(majorSelection, +options.value));
+  makeControls();
+  new ResizeObserver(draw).observe(canvas);
+  select(0);
+})();
+</script>
+</body>
+</html>

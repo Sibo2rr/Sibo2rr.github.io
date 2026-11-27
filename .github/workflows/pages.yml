@@ -1,0 +1,42 @@
+name: Publish HABI-12K
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          lfs: true
+      - name: Prepare the static site with the original video
+        run: |
+          video=HABI-12K/asset/hero-habi12k-palette-1080p60.webm
+          oid=$(git show "HEAD:$video" | sed -n 's/^oid sha256://p')
+          printf '%s  %s\n' "$oid" "$video" | sha256sum --check -
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy the site
+        id: deployment
+        uses: actions/deploy-pages@v4
