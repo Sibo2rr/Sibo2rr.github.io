@@ -50,7 +50,8 @@ h1, h2, h3, p, figure, dl, dd { margin: 0; }
 .skip:focus { transform: translateY(0); }
 .site-header { position: sticky; z-index: 5; top: 0; background: rgb(255 255 255 / 95%); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
 .header-inner { display: grid; grid-template-columns: 1fr auto 1fr; min-height: var(--header-height); gap: 20px; align-items: center; }
-.header-lab-logo { display: block; justify-self: end; width: auto; height: clamp(36px, 4.3vw, 54px); overflow: hidden; }
+.header-lab-logo { display: block; justify-self: end; }
+.header-lab-logo svg { display: block; width: auto; height: clamp(36px, 4.3vw, 54px); overflow: hidden; }
 .wordmark { display: inline-flex; align-items: center; justify-self: start; font-size: 1.2rem; font-weight: 790; letter-spacing: -.035em; white-space: nowrap; }
 .wordmark-accent { color: var(--accent); }
 .brand-dash { display: inline-block; margin-inline: .1em .05em; letter-spacing: 0; }
@@ -416,9 +417,11 @@ h1 span { color: var(--accent); }
         <a href="#dataset" aria-label="Dataset composition">Dataset<span class="nav-wide"> composition</span></a><a href="#comparison" class="nav-wide">Comparison</a><a href="#benchmark">HABI-Bench</a>
         <a class="nav-hub" href="https://huggingface.co/datasets/Inception3D/HABI-12K">Download</a>
       </nav>
-      <svg class="header-lab-logo" viewBox="425 74 1137 823" width="1137" height="823" role="img" aria-label="Inception3D Lab">
-        <image href="asset/inception-brand.webp" width="1984" height="1984"></image>
-      </svg>
+      <a class="header-lab-logo" href="http://www.inception3d.fun/" aria-label="Inception3D Lab homepage">
+        <svg viewBox="425 74 1137 823" width="1137" height="823" aria-hidden="true" focusable="false">
+          <image href="asset/inception-brand.webp" width="1984" height="1984"></image>
+        </svg>
+      </a>
     </div>
   </header>
 
